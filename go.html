@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>منصة الأستاذ أحمد شعبان | خبير الفلسفة والمنطق</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { 
+            --primary: #d4af37; 
+            --primary-dark: #b8860b;
+            --secondary: #1a1a1a;
+            --bg: #050505; 
+            --card-bg: rgba(26, 26, 26, 0.95);
+            --text-main: #ffffff;
+            --text-dim: #b3b3b3;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Cairo', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body { 
+            background: var(--bg);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(212, 175, 55, 0.1) 0%, transparent 40%);
+            color: var(--text-main); 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        .auth-container { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(20px); 
+            padding: 35px 25px; 
+            border-radius: 24px; 
+            border: 1px solid rgba(212, 175, 55, 0.2); 
+            width: 100%; 
+            max-width: 420px; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+            animation: fadeIn 0.8s ease-out;
+            text-align: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .profile-section {
+            margin-bottom: 25px;
+        }
+
+        .main-poster {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3.5px solid var(--primary);
+            padding: 5px;
+            background: var(--secondary);
+            box-shadow: 0 0 35px rgba(212, 175, 55, 0.3);
+            transition: 0.5s ease;
+        }
+
+        .main-poster:hover { transform: scale(1.05) rotate(3deg); }
+
+        h2 { font-size: 1.6rem; font-weight: 900; margin-top: 15px; color: var(--text-main); }
+        .philosophy-tag { color: var(--primary); font-size: 1rem; font-weight: 700; margin-top: 5px; display: block; }
+        
+        .welcome-text {
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            margin-top: 15px;
+            line-height: 1.6;
+            padding: 0 10px;
+        }
+
+        .btn-group-main { display: flex; flex-direction: column; gap: 15px; margin-top: 30px; }
+        
+        .btn { 
+            width: 100%; padding: 15px; border-radius: 14px; border: none; 
+            cursor: pointer; font-weight: 700; font-size: 1rem; 
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            transition: 0.3s;
+        }
+        
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #000; box-shadow: 0 10px 20px rgba(212, 175, 55, 0.2); }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(212, 175, 55, 0.3); }
+        
+        .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+        .btn-outline:hover { background: var(--primary); color: #000; }
+
+        .auth-form { display: none; text-align: right; }
+        .form-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
+        .back-btn { cursor: pointer; color: var(--primary); font-weight: 700; font-size: 0.9rem; }
+
+        .form-group { margin-bottom: 15px; position: relative; }
+        input, select { 
+            width: 100%; padding: 14px 45px 14px 15px; border-radius: 12px; 
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); 
+            color: white; outline: none; font-size: 0.95rem; text-align: right;
+        }
+        input:focus { border-color: var(--primary); }
+        .form-group i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary); }
+
+        #mr-welcome { 
+            display: none; background: rgba(212, 175, 55, 0.15); padding: 12px; 
+            border-radius: 12px; color: var(--primary); text-align: center; 
+            margin-bottom: 20px; font-weight: 900; border: 1px dashed var(--primary);
+        }
+
+        #otp-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+        }
+        .otp-box { background: var(--secondary); padding: 35px; border-radius: 25px; text-align: center; border: 1px solid var(--primary); max-width: 380px; width: 100%; }
+
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;
+        }
+        .loader { width: 48px; height: 48px; border: 5px solid var(--primary); border-bottom-color: transparent; border-radius: 50%; animation: rotation 1s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div class="loader"></div>
+        <p style="margin-top: 15px; color: var(--primary); font-weight: 700;">جاري تحضير العقل المنطقي...</p>
+    </div>
+
+    <div class="auth-container">
+        <div class="profile-section">
+            <img src="A1.png" alt="الأستاذ أحمد شعبان" class="main-poster">
+            <h2>الأستاذ أحمد شعبان</h2>
+            <span class="philosophy-tag">فيلسوف المواد الفلسفية والمنطق</span>
+            <p class="welcome-text">مرحباً بك في المنصة الرسمية للأستاذ أحمد شعبان. هنا نبني العقول بالمنطق، ونرتقي بالفكر الفلسفي للقمة. ابدأ رحلتك الآن!</p>
+        </div>
+        
+        <div id="main-view" class="btn-group-main">
+            <button class="btn btn-primary" onclick="showForm('signup')">
+                <i class="fas fa-id-card"></i> انضم لكتيبة العباقرة
+            </button>
+            <button class="btn btn-outline" onclick="showForm('login')">
+                <i class="fas fa-door-open"></i> العودة لمنصة التعلم
+            </button>
+        </div>
+
+        <div id="signup-view" class="auth-form">
+            <div class="form-header">
+                <h3 style="color: var(--primary);">رحلة نجاح جديدة</h3>
+                <span class="back-btn" onclick="showMain()">رجوع <i class="fas fa-arrow-left"></i></span>
+            </div>
+            <div class="form-group"><i class="fas fa-user"></i><input type="text" id="reg-name" placeholder="الاسم الكامل"></div>
+            <div class="form-group"><i class="fas fa-phone"></i><input type="tel" id="reg-phone" placeholder="رقم الهاتف"></div>
+            <div class="form-group">
+                <i class="fas fa-school"></i>
+                <select id="reg-grade">
+                    <option value="1">الصف الأول الثانوي</option>
+                    <option value="2">الصف الثاني الثانوي</option>
+                    <option value="3">الصف الثالث الثانوي</option>
+                </select>
+            </div>
+            <div class="form-group"><i class="fas fa-key"></i><input type="password" id="reg-pass" placeholder="كلمة السر"></div>
+            <button class="btn btn-primary" onclick="startRegistration()">تأكيد وفتح الحساب</button>
+        </div>
+
+        <div id="login-view" class="auth-form">
+            <div class="form-header">
+                <h3 style="color: var(--primary);">استكمال الرحلة</h3>
+                <span class="back-btn" onclick="showMain()">رجوع <i class="fas fa-arrow-left"></i></span>
+            </div>
+            <div id="mr-welcome">⚜️ أهلاً بك يا قائدنا أحمد شعبان ⚜️</div>
+            <div class="form-group"><i class="fas fa-mobile-alt"></i><input type="tel" id="login-phone" placeholder="رقم الموبايل" oninput="checkMrAhmed(this.value)"></div>
+            <div class="form-group"><i class="fas fa-lock"></i><input type="password" id="login-pass" placeholder="كلمة السر"></div>
+            <button class="btn btn-primary" onclick="attemptLogin()">دخول المنصة</button>
+        </div>
+    </div>
+
+    <div id="otp-modal">
+        <div class="otp-box">
+            <i class="fas fa-brain" style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
+            <h3>بوابة الأمان المنطقي</h3>
+            <p style="color: var(--text-dim); margin-bottom: 15px;">كود التحقق الخاص بك هو:</p>
+            <h2 id="fake-code" style="letter-spacing: 12px; color: var(--primary); background: #000; padding: 15px; border-radius: 15px; border: 1.5px solid var(--primary); margin-bottom: 20px;"></h2>
+            <input type="text" id="otp-input" placeholder="اكتب الكود هنا" style="text-align: center; font-size: 1.5rem; letter-spacing: 5px;">
+            <button class="btn btn-primary" style="margin-top: 20px;" onclick="verifyOTP()">تفعيل حساب الطالب</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfkxj5I7UOEETOf9GRqGgqEaEoqPtPMek",
+            authDomain: "mrahmed-925d8.firebaseapp.com",
+            databaseURL: "https://mrahmed-925d8-default-rtdb.firebaseio.com",
+            projectId: "mrahmed-925d8",
+            storageBucket: "mrahmed-925d8.firebasestorage.app",
+            messagingSenderId: "83939909031",
+            appId: "1:83939909031:web:adb0b10d41b9df6c602a82",
+            measurementId: "G-HNPXCNSTCN"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let tempUser = {};
+        let generatedOTP;
+
+        // وظيفة فحص الحظر والدخول التلقائي
+        function checkUserStatus(phone) {
+            db.ref('students/' + phone).once('value', snap => {
+                const user = snap.val();
+                if (user) {
+                    if (user.status === "blocked") {
+                        window.location.href = "contact.html";
+                    } else {
+                        window.location.href = "index.html";
+                    }
+                } else {
+                    document.getElementById('loading-screen').style.display = 'none';
+                }
+            });
+        }
+
+        window.onload = function() {
+            const savedPhone = localStorage.getItem('userLoggedIn');
+            if (savedPhone) {
+                checkUserStatus(savedPhone);
+            } else {
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                }, 1000);
+            }
+        };
+
+        function showForm(id) {
+            document.getElementById('main-view').style.display = 'none';
+            document.querySelectorAll('.auth-form').forEach(f => f.style.display = 'none');
+            document.getElementById(id + '-view').style.display = 'block';
+        }
+
+        function showMain() {
+            document.querySelectorAll('.auth-form').forEach(f => f.style.display = 'none');
+            document.getElementById('main-view').style.display = 'flex';
+        }
+
+        function checkMrAhmed(val) {
+            document.getElementById('mr-welcome').style.display = (val === "01025768529") ? 'block' : 'none';
+        }
+
+        function startRegistration() {
+            const phone = document.getElementById('reg-phone').value.trim();
+            const name = document.getElementById('reg-name').value.trim();
+            const pass = document.getElementById('reg-pass').value.trim();
+            const grade = document.getElementById('reg-grade').value;
+
+            if(!phone || !name || !pass) return alert("من فضلك، الحكمة تقتضي إكمال جميع البيانات.");
+
+            db.ref('students/' + phone).once('value', snap => {
+                if(snap.exists()) {
+                    alert("هذا الرقم مسجل بالفعل في كتيبتنا!");
+                } else {
+                    tempUser = { name, phone, pass, grade, role: "student", status: "active", joinedAt: new Date().toISOString() };
+                    generatedOTP = Math.floor(100000 + Math.random() * 900000);
+                    document.getElementById('fake-code').innerText = generatedOTP;
+                    document.getElementById('otp-modal').style.display = 'flex';
+                }
+            });
+        }
+
+        function verifyOTP() {
+            if(document.getElementById('otp-input').value == generatedOTP) {
+                db.ref('students/' + tempUser.phone).set(tempUser).then(() => {
+                    localStorage.setItem('userLoggedIn', tempUser.phone);
+                    localStorage.setItem('userName', tempUser.name);
+                    window.location.href = "index.html";
+                });
+            } else {
+                alert("الكود غير صحيح، ركز يا بطل!");
+            }
+        }
+
+        function attemptLogin() {
+            const p = document.getElementById('login-phone').value.trim();
+            const s = document.getElementById('login-pass').value.trim();
+
+            if(!p || !s) return alert("أدخل بياناتك لاستعادة رحلتك الفلسفية.");
+
+            db.ref('students/' + p).once('value', snap => {
+                const user = snap.val();
+                if(user && user.pass === s) {
+                    if(user.status === "blocked") {
+                        window.location.href = "contact.html";
+                        return;
+                    }
+                    localStorage.setItem('userLoggedIn', p);
+                    localStorage.setItem('userName', user.name);
+                    window.location.href = "index.html";
+                } else {
+                    alert("البيانات لا تتطابق مع سجلاتنا المنطقية!");
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
