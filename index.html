@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>منصة الأستاذ أحمد شعبان | خبير الفلسفة والمنطق</title>
     
+    <meta name="theme-color" content="#050505">
+    <link rel="apple-touch-icon" href="A1.png">
+    <link rel="manifest" id="manifest-placeholder">
+
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -54,20 +58,6 @@
         }
         .wallet-box:hover { background: var(--gold); color: #000; }
 
-        /* زر تحميل التطبيق في الهيدر */
-        .download-app-btn {
-            background: linear-gradient(45deg, #d4af37, #f4d03f);
-            color: #000 !important;
-            padding: 6px 12px;
-            border-radius: 10px;
-            font-weight: bold;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            text-decoration: none;
-        }
-
         /* الأقسام المنبثقة (Alerts & Wallet) */
         .overlay-common {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -107,13 +97,28 @@
         .credits a { color: var(--primary); text-decoration: none; font-weight: bold; }
         .credits a:hover { text-decoration: underline; }
 
+        /* زر تثبيت التطبيق */
+        #install-btn {
+            display: none;
+            background: linear-gradient(45deg, #d4af37, #f4d03f);
+            color: #000;
+            padding: 16px 40px;
+            border-radius: 15px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
+            align-items: center;
+            gap: 10px;
+        }
+
         @media (max-width: 1024px) {
             header nav { display: none; }
             .mobile-nav { display: flex; }
             .hero { flex-direction: column-reverse; text-align: center; padding-top: 140px; }
             .hero-description { text-align: center; }
             .hero-text { display: flex; flex-direction: column; align-items: center; }
-            .header-download { display: none; } /* إخفاء زر التحميل من الهيدر في الموبايل */
         }
     </style>
 </head>
@@ -157,7 +162,6 @@
                 <li><a href="videos.html"><i class="fas fa-video"></i> المحاضرات</a></li>
                 <li><a href="exams.html"><i class="fas fa-pen-nib"></i> الاختبارات</a></li>
                 <li><a href="live.html"><i class="fas fa-broadcast-tower"></i> البث المباشر</a></li>
-                <li class="header-download"><a href="A1.png" download class="download-app-btn"><img src="A1.png" width="18" style="border-radius: 4px;"> تحميل التطبيق</a></li>
             </ul>
         </nav>
 
@@ -192,9 +196,7 @@
             <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: start;">
                 <a href="videos.html" style="background: var(--primary); color: #000; padding: 16px 40px; border-radius: 15px; text-decoration: none; font-weight: bold; box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);"><i class="fas fa-lightbulb"></i> ابدأ التفكير الآن</a>
                 <a href="library.html" style="border: 2px solid var(--primary); color: var(--primary); padding: 16px 40px; border-radius: 15px; text-decoration: none; font-weight: bold;"><i class="fas fa-file-pdf"></i> الملازم الذهبية</a>
-                <a href="A1.png" download style="background: #1a1a1a; color: #fff; border: 1px solid var(--primary); padding: 16px 40px; border-radius: 15px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px;">
-                    <img src="A1.png" width="22" style="border-radius: 5px;"> تنزيل التطبيق
-                </a>
+                <button id="install-btn"><img src="A1.png" width="20"> تثبيت المنصة كتطبيق</button>
             </div>
         </div>
         
@@ -220,6 +222,50 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <script>
+        // --- 1. إعدادات الـ PWA (تثبيت الموقع كتطبيق) ---
+        const manifest = {
+            "name": "منصة الأستاذ أحمد شعبان",
+            "short_name": "أحمد شعبان",
+            "start_url": "index.html",
+            "display": "standalone",
+            "background_color": "#050505",
+            "theme_color": "#d4af37",
+            "icons": [
+                { "src": "A1.png", "sizes": "192x192", "type": "image/png" },
+                { "src": "A1.png", "sizes": "512x512", "type": "image/png" }
+            ]
+        };
+        const stringManifest = JSON.stringify(manifest);
+        const blob = new Blob([stringManifest], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(blob);
+        document.querySelector('#manifest-placeholder').setAttribute('href', manifestURL);
+
+        let deferredPrompt;
+        const installBtn = document.getElementById('install-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'flex';
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installBtn.style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        // تسجيل الـ Service Worker (ضروري للـ PWA)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript;base64,' + btoa('self.addEventListener("fetch", (event) => {});'));
+        }
+
+        // --- 2. إعدادات Firebase والكود الأصلي ---
         const firebaseConfig = {
             apiKey: "AIzaSyBfkxj5I7UOEETOf9GRqGgqEaEoqPtPMek",
             authDomain: "mrahmed-925d8.firebaseapp.com",
@@ -290,15 +336,9 @@
             });
         }
 
-        // دوال المحفظة
-        function openWalletBox() {
-            document.getElementById('wallet-overlay').style.display = 'flex';
-        }
-        function closeWalletBox() {
-            document.getElementById('wallet-overlay').style.display = 'none';
-        }
+        function openWalletBox() { document.getElementById('wallet-overlay').style.display = 'flex'; }
+        function closeWalletBox() { document.getElementById('wallet-overlay').style.display = 'none'; }
 
-        // دوال التنبيهات
         function showNextAlert() {
             if (pendingAlerts.length > 0) {
                 const current = pendingAlerts[0];
@@ -317,9 +357,7 @@
             }
             document.getElementById('alert-overlay').style.display = 'none';
             pendingAlerts.shift();
-            setTimeout(() => {
-                if (pendingAlerts.length > 0) showNextAlert();
-            }, 300);
+            setTimeout(() => { if (pendingAlerts.length > 0) showNextAlert(); }, 300);
         }
 
         db.ref('admin/online_list').on('value', (snap) => {
