@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
-            --primary: #d4af37; /* الذهبي الملكي */
+            --primary: #d4af37; 
             --accent: #ff1744; 
             --bg: #050505; 
             --card: #111111; 
@@ -18,166 +18,142 @@
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        
-        body { 
-            background: var(--bg); 
-            color: var(--text); 
-            display: flex; 
-            min-height: 100vh; 
-            overflow: hidden; 
-        }
+        body { background: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow: hidden; }
 
-        /* Sidebar Customization */
+        /* Sidebar */
         aside { width: 280px; background: #0a0a0a; border-left: 1px solid var(--glass); padding: 25px 15px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; flex-shrink: 0; }
-        
         .admin-profile { text-align: center; margin-bottom: 20px; }
-        .admin-profile img { width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--primary); padding: 5px; margin-bottom: 10px; object-fit: cover; }
-        .admin-profile h2 { color: var(--primary); font-size: 1.2rem; font-weight: 900; }
+        .admin-profile img { width: 90px; height: 90px; border-radius: 50%; border: 2px solid var(--primary); padding: 5px; margin-bottom: 10px; object-fit: cover; }
+        .admin-profile h2 { color: var(--primary); font-size: 1.1rem; font-weight: 900; }
 
         .nav-btn { width: 100%; padding: 14px 18px; background: transparent; border: none; color: #94a3b8; text-align: right; cursor: pointer; border-radius: 15px; font-weight: bold; display: flex; align-items: center; gap: 15px; }
-        .nav-btn i { font-size: 1.2rem; }
         .nav-btn:hover, .nav-btn.active { background: rgba(212, 175, 55, 0.1); color: var(--primary); box-shadow: inset 4px 0 0 var(--primary); }
 
-        /* Main Content Area */
-        main { flex: 1; padding: 25px; overflow-y: auto; height: 100vh; position: relative; }
-        .section { display: none; animation: slideUp 0.5s ease; }
+        /* Main Content */
+        main { flex: 1; padding: 20px; overflow-y: auto; height: 100vh; position: relative; }
+        .section { display: none; animation: slideUp 0.4s ease; }
         .section.active { display: block; }
 
-        /* Stats Cards */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-bottom: 35px; }
-        .stat-card { background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid var(--glass); text-align: center; position: relative; overflow: hidden; cursor: pointer; }
-        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--primary); opacity: 0.8; }
-        
-        .hidden-val h3 { filter: blur(10px); transition: 0.3s; }
-        .stat-card:not(.hidden-val) h3 { filter: blur(0); }
-        .stat-card i { font-size: 2.5rem; color: var(--primary); margin-bottom: 15px; }
-
-        /* Professional Tables */
-        .table-container { background: var(--card); border-radius: 24px; overflow-x: auto; border: 1px solid var(--glass); }
-        .data-table { width: 100%; border-collapse: collapse; text-align: right; min-width: 750px; }
-        .data-table th, .data-table td { padding: 18px 25px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-        .data-table th { background: rgba(212, 175, 55, 0.05); color: var(--primary); font-weight: 900; }
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid var(--glass); text-align: center; cursor: pointer; position: relative; overflow: hidden; }
+        .stat-card i { font-size: 2rem; color: var(--primary); margin-bottom: 10px; }
+        .hidden-val h3 { filter: blur(8px); }
 
         /* Chat System */
-        .chat-layout { display: grid; grid-template-columns: 340px 1fr; gap: 0; height: 75vh; border-radius: 28px; overflow: hidden; border: 1px solid var(--glass); background: #000; }
+        .chat-layout { display: grid; grid-template-columns: 320px 1fr; gap: 0; height: 85vh; border-radius: 20px; overflow: hidden; border: 1px solid var(--glass); background: #000; position: relative; }
         .chat-list { background: #0a0a0a; overflow-y: auto; border-left: 1px solid #222; }
-        .chat-user-item { padding: 18px; border-bottom: 1px solid #1a1a1a; cursor: pointer; display: flex; align-items: center; gap: 15px; position: relative; }
-        .chat-user-item.active { background: #1a1a1a; }
-        .unread-dot { width: 12px; height: 12px; background: var(--primary); border-radius: 50%; position: absolute; left: 20px; box-shadow: 0 0 12px var(--primary); }
-        
-        .chat-window { display: flex; flex-direction: column; background: #050505; position: relative; }
-        .messages-area { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        
-        .msg { padding: 12px 18px; border-radius: 18px; max-width: 70%; font-size: 1rem; position: relative; }
-        .msg.student { align-self: flex-start; background: #222; color: white; border-top-right-radius: 4px; }
-        .msg.admin { align-self: flex-end; background: var(--primary); color: #000; border-top-left-radius: 4px; font-weight: bold; }
-        .msg img { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; }
+        .chat-user-item { padding: 15px; border-bottom: 1px solid #1a1a1a; cursor: pointer; display: flex; align-items: center; gap: 12px; position: relative; }
+        .chat-user-item.active { background: #1a1a1a; border-right: 3px solid var(--primary); }
+        .unread-dot { width: 10px; height: 10px; background: var(--primary); border-radius: 50%; position: absolute; left: 15px; top: 50%; transform: translateY(-50%); box-shadow: 0 0 10px var(--primary); }
 
-        .chat-input-bar { padding: 15px 25px; display: flex; align-items: center; gap: 15px; background: #111; }
+        .chat-window { display: flex; flex-direction: column; background: #050505; position: relative; height: 100%; }
+        .messages-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 80px; }
+        
+        .msg { padding: 10px 15px; border-radius: 15px; max-width: 75%; font-size: 0.95rem; line-height: 1.4; position: relative; word-wrap: break-word; }
+        .msg.student { align-self: flex-start; background: #222; color: #fff; border-bottom-right-radius: 2px; }
+        .msg.admin { align-self: flex-end; background: var(--primary); color: #000; border-bottom-left-radius: 2px; font-weight: bold; }
+        .msg img { max-width: 100%; border-radius: 8px; margin-top: 5px; cursor: pointer; }
+        .msg .time { font-size: 0.65rem; display: block; margin-top: 4px; opacity: 0.6; }
+
+        /* Fixed Input Bar */
+        .chat-input-bar { position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px; background: #111; display: flex; align-items: center; gap: 10px; border-top: 1px solid #222; z-index: 10; }
         #admin-reply-input { flex: 1; background: #222; border: none; padding: 12px 20px; border-radius: 25px; color: white; outline: none; }
-        .send-btn-circle { background: var(--primary); color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .circle-btn { width: 45px; height: 45px; background: var(--primary); border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #000; flex-shrink: 0; }
 
-        /* Forms */
-        .form-box { background: var(--card); padding: 25px; border-radius: 22px; border: 1px solid var(--glass); margin-top: 20px; }
-        input, textarea { width: 100%; padding: 15px; margin-top: 10px; border-radius: 12px; border: 1px solid #333; background: #000; color: white; outline: none; }
-        input:focus { border-color: var(--primary); }
-        .submit-btn { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer; width: 100%; margin-top: 15px; }
+        .back-to-list { display: none; position: absolute; top: 10px; left: 10px; z-index: 20; background: #333; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; }
 
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        /* Tables */
+        .table-container { background: var(--card); border-radius: 20px; overflow-x: auto; margin-top: 15px; }
+        .data-table { width: 100%; border-collapse: collapse; text-align: right; min-width: 600px; }
+        .data-table th, .data-table td { padding: 15px; border-bottom: 1px solid #222; }
+        .data-table th { color: var(--primary); background: rgba(212, 175, 55, 0.05); }
+        .action-btn { background: var(--primary); border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: bold; margin-left: 5px; }
+        
+        input, textarea { width: 100%; padding: 12px; margin-top: 8px; border-radius: 10px; border: 1px solid #333; background: #000; color: white; outline: none; }
+        .submit-btn { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 10px; font-weight: 900; cursor: pointer; width: 100%; margin-top: 15px; }
 
-        @media (max-width: 1024px) {
-            body { flex-direction: column; overflow-y: auto; }
-            aside { width: 100%; height: auto; flex-direction: row; overflow-x: auto; padding: 10px; border-bottom: 1px solid var(--glass); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            aside { width: 100%; height: auto; flex-direction: row; overflow-x: auto; padding: 10px; border-bottom: 1px solid #222; }
             .admin-profile { display: none; }
-            .nav-btn { padding: 10px 15px; white-space: nowrap; width: auto; }
-            main { height: auto; overflow: visible; }
-            .chat-layout { grid-template-columns: 1fr; height: 80vh; }
+            .nav-btn { width: auto; white-space: nowrap; padding: 10px 15px; }
+            .chat-layout { grid-template-columns: 1fr; height: 75vh; }
+            .chat-list { display: block; }
+            .chat-list.hidden-mobile { display: none; }
+            .chat-window { display: none; }
+            .chat-window.active-mobile { display: flex; position: absolute; top:0; left:0; width:100%; height:100%; z-index:15; }
+            .back-to-list { display: block; }
         }
     </style>
 </head>
 <body>
 
     <aside>
-        <div class="admin-profile">
-            <img src="A3.png" alt="الأستاذ أحمد شعبان">
-            <h2>الأستاذ أحمد شعبان ⚜️</h2>
-        </div>
-        <button class="nav-btn active" onclick="showSection('dashboard', this)"><i class="fas fa-chart-pie"></i> نظرة عامة</button>
-        <button class="nav-btn" onclick="showSection('students', this)"><i class="fas fa-user-graduate"></i> طلابنا</button>
-        <button class="nav-btn" onclick="showSection('balance-section', this)"><i class="fas fa-lira-sign"></i> بنك الرصيد</button>
-        <button class="nav-btn" onclick="showSection('alerts', this)"><i class="fas fa-bullhorn"></i> إشعارات</button>
+        <div class="admin-profile"><img src="A3.png"><h2>أحمد شعبان ⚜️</h2></div>
+        <button class="nav-btn active" onclick="showSection('dashboard', this)"><i class="fas fa-chart-pie"></i> الإحصائيات</button>
+        <button class="nav-btn" onclick="showSection('students', this)"><i class="fas fa-user-graduate"></i> الطلاب</button>
         <button class="nav-btn" onclick="showSection('chat-admin', this)"><i class="fas fa-envelope-open-text"></i> البريد</button>
-        <button class="nav-btn" onclick="window.location.href='index.html'" style="color: var(--accent); margin-top: auto;"><i class="fas fa-door-open"></i> خروج</button>
+        <button class="nav-btn" onclick="showSection('balance-section', this)"><i class="fas fa-lira-sign"></i> الرصيد</button>
+        <button class="nav-btn" onclick="showSection('alerts', this)"><i class="fas fa-bullhorn"></i> إشعارات</button>
+        <button class="nav-btn" onclick="window.location.href='index.html'" style="color: var(--accent);"><i class="fas fa-power-off"></i> خروج</button>
     </aside>
 
     <main>
         <div id="dashboard" class="section active">
-            <h1>إحصائيات المنصة..</h1>
+            <h2 style="margin-bottom:20px">نظرة عامة</h2>
             <div class="stats-grid">
-                <div class="stat-card hidden-val" onclick="this.classList.toggle('hidden-val')">
-                    <i class="fas fa-vault"></i>
-                    <h3 id="total-profits">0</h3><p>خزينة المنصة</p>
-                </div>
-                <div class="stat-card hidden-val" onclick="this.classList.toggle('hidden-val')">
-                    <i class="fas fa-users-viewfinder"></i>
-                    <h3 id="total-students">0</h3><p>إجمالي الفلاسفة</p>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-user-clock" style="color: var(--success);"></i>
-                    <h3 id="online-now">0</h3><p>متصلون حالياً</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="students" class="section">
-            <h2>قاعدة بيانات الطلاب</h2>
-            <input type="text" id="searchStudent" placeholder="ابحث باسم الطالب أو هاتفه..." oninput="filterStudents()">
-            <div class="table-container">
-                <table class="data-table">
-                    <thead><tr><th>الاسم</th><th>الهاتف</th><th>الرصيد</th><th>الحالة</th><th>الإجراء</th></tr></thead>
-                    <tbody id="students-list"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="balance-section" class="section">
-            <h2>التحكم في الأرصدة</h2>
-            <div class="form-box">
-                <input type="text" id="target-phone" placeholder="رقم هاتف الطالب (المستهدف)">
-                <input type="number" id="balance-amount" placeholder="المبلغ (مثلاً: 50)">
-                <div style="display: flex; gap: 15px;">
-                    <button class="submit-btn" style="background: var(--success); color: #000;" onclick="processBalance('add')">إيداع رصيد +</button>
-                    <button class="submit-btn" style="background: var(--accent); color: #fff;" onclick="processBalance('withdraw')">سحب رصيد -</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="alerts" class="section">
-            <h2>إرسال تعميم (إشعار عام)</h2>
-            <div class="form-box">
-                <textarea id="global-msg" rows="5" placeholder="اكتب نص الرسالة التي ستظهر لجميع الطلاب..."></textarea>
-                <button class="submit-btn" onclick="sendAlert()">بث الرسالة فوراً 🚀</button>
+                <div class="stat-card hidden-val" onclick="this.classList.toggle('hidden-val')"><i class="fas fa-vault"></i><h3 id="total-profits">0</h3><p>الخزينة</p></div>
+                <div class="stat-card hidden-val" onclick="this.classList.toggle('hidden-val')"><i class="fas fa-users"></i><h3 id="total-students">0</h3><p>عدد الطلاب</p></div>
+                <div class="stat-card"><i class="fas fa-globe" style="color:var(--success)"></i><h3 id="online-now">0</h3><p>نشط الآن</p></div>
             </div>
         </div>
 
         <div id="chat-admin" class="section">
             <div class="chat-layout">
                 <div class="chat-list" id="chat-users-list"></div>
-                <div class="chat-window">
-                    <div id="active-chat-name" style="padding: 18px; background: #111; font-weight: bold; border-bottom: 1px solid #222; color: var(--primary);">اختر فيلسوفاً للبدء</div>
+                <div class="chat-window" id="main-chat-window">
+                    <button class="back-to-list" onclick="closeChatMobile()"><i class="fas fa-arrow-right"></i> رجوع</button>
+                    <div id="active-chat-name" style="padding: 15px; background: #111; border-bottom: 1px solid #222; color: var(--primary); font-weight: bold; text-align: center;">اختر طالباً للمحادثة</div>
                     <div class="messages-area" id="admin-messages-display"></div>
-                    
                     <div class="chat-input-bar">
-                        <label class="media-btn" style="color: #94a3b8; cursor: pointer;">
-                            <i class="fas fa-paperclip"></i>
-                            <input type="file" id="media-input" hidden accept="image/*" onchange="sendMediaMsg()">
-                        </label>
-                        <input type="text" id="admin-reply-input" placeholder="اكتب ردك هنا..." onkeypress="if(event.key === 'Enter') sendAdminReply()">
-                        <button class="send-btn-circle" onclick="sendAdminReply()">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
+                        <label style="cursor:pointer"><i class="fas fa-paperclip" style="color:#888"></i><input type="file" id="admin-file" hidden onchange="uploadAdminMedia()"></label>
+                        <input type="text" id="admin-reply-input" placeholder="اكتب ردك هنا..." onkeypress="if(event.key==='Enter') sendAdminReply()">
+                        <button class="circle-btn" onclick="sendAdminReply()"><i class="fas fa-paper-plane"></i></button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div id="students" class="section">
+            <input type="text" id="searchStudent" placeholder="ابحث بالاسم أو الرقم..." oninput="filterStudents()">
+            <div class="table-container">
+                <table class="data-table">
+                    <thead><tr><th>الطالب</th><th>الهاتف</th><th>الرصيد</th><th>الحالة</th><th>تحكم</th></tr></thead>
+                    <tbody id="students-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="balance-section" class="section">
+            <div class="stat-card" style="text-align:right">
+                <h3>تعديل رصيد</h3>
+                <input type="text" id="target-phone" placeholder="رقم هاتف الطالب">
+                <input type="number" id="balance-amount" placeholder="المبلغ">
+                <div style="display:flex; gap:10px">
+                    <button class="submit-btn" style="background:var(--success)" onclick="updateBalance('add')">إيداع +</button>
+                    <button class="submit-btn" style="background:var(--accent); color:white" onclick="updateBalance('sub')">سحب -</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="alerts" class="section">
+            <div class="stat-card" style="text-align:right">
+                <h3>تنبيه عام</h3>
+                <textarea id="global-msg" rows="4" placeholder="نص الرسالة..."></textarea>
+                <button class="submit-btn" onclick="broadcastAlert()">بث الإشعار</button>
             </div>
         </div>
     </main>
@@ -186,7 +162,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <script>
-        // Firebase Config للأستاذ أحمد شعبان
         const firebaseConfig = {
             apiKey: "AIzaSyBfkxj5I7UOEETOf9GRqGgqEaEoqPtPMek",
             authDomain: "mrahmed-925d8.firebaseapp.com",
@@ -194,155 +169,154 @@
             projectId: "mrahmed-925d8",
             storageBucket: "mrahmed-925d8.firebasestorage.app",
             messagingSenderId: "83939909031",
-            appId: "1:83939909031:web:adb0b10d41b9df6c602a82",
-            measurementId: "G-HNPXCNSTCN"
+            appId: "1:83939909031:web:adb0b10d41b9df6c602a82"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const myPhone = "01025768529"; // رقم الأستاذ
-
         let currentChatUser = null;
 
         function showSection(id, btn) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            btn.classList.add('active');
+            if(btn) btn.classList.add('active');
         }
 
-        // Online Status
-        const myPresenceRef = db.ref('admin/online_list/' + myPhone);
-        myPresenceRef.set({ name: "Mr. Ahmed Shaban", status: "online" });
-        myPresenceRef.onDisconnect().remove();
-
-        db.ref('admin/online_list').on('value', snap => {
-            document.getElementById('online-now').innerText = snap.numChildren() || 0;
-        });
-
-        // Students Management
         db.ref('students').on('value', snap => {
             const list = document.getElementById('students-list');
             let profit = 0, count = 0;
             list.innerHTML = "";
             snap.forEach(child => {
                 const u = child.val();
-                count++;
-                profit += (u.totalRecharge || 0);
-                list.innerHTML += `
-                    <tr>
-                        <td><b>${u.name}</b></td>
-                        <td>${u.phone}</td>
-                        <td>${u.balance || 0} ج.م</td>
-                        <td style="color:${u.status === 'blocked' ? '#ff1744' : '#10b981'}">${u.status === 'blocked' ? 'محظور 🚫' : 'نشط ✅'}</td>
-                        <td><button onclick="toggleBan('${u.phone}', '${u.status === 'blocked' ? 'active' : 'blocked'}')" style="cursor:pointer; background:#222; color:var(--primary); border:1px solid var(--primary); padding:8px 15px; border-radius:10px;">تبديل الحالة</button></td>
-                    </tr>`;
+                count++; profit += (u.totalRecharge || 0);
+                list.innerHTML += `<tr>
+                    <td><b>${u.name}</b></td>
+                    <td>${u.phone}</td>
+                    <td>${u.balance || 0} ج.م</td>
+                    <td style="color:${u.status==='blocked'?'red':'#10b981'}">${u.status==='blocked'?'محظور':'نشط'}</td>
+                    <td>
+                        <button class="action-btn" onclick="openChatFromTable('${u.phone}')">مراسلة</button>
+                        <button class="action-btn" style="background:#444; color:white" onclick="toggleBan('${u.phone}','${u.status}')">حظر/فك</button>
+                    </td>
+                </tr>`;
             });
             document.getElementById('total-students').innerText = count;
-            document.getElementById('total-profits').innerText = profit.toLocaleString() + " ج.م";
+            document.getElementById('total-profits').innerText = profit + " ج.م";
         });
 
-        // Chat Management
+        db.ref('admin/online_list').on('value', s => document.getElementById('online-now').innerText = s.numChildren());
+
         db.ref('chats/private').on('value', snap => {
             const list = document.getElementById('chat-users-list');
             list.innerHTML = "";
             snap.forEach(child => {
                 const phone = child.key;
-                const messages = child.val();
-                const lastMsg = Object.values(messages).pop();
-                const hasUnread = lastMsg.role === 'student' && !lastMsg.readByAdmin;
+                const msgs = Object.values(child.val());
+                const last = msgs[msgs.length - 1];
+                const hasUnread = last.role === 'student' && !last.readByAdmin;
 
                 db.ref('students/' + phone + '/name').once('value', nSnap => {
-                    const sName = nSnap.val() || "طالب جديد";
-                    list.innerHTML += `
-                        <div class="chat-user-item ${currentChatUser === phone ? 'active' : ''}" onclick="openChat('${phone}')">
-                            <i class="fas fa-user-circle" style="font-size: 2.5rem; color: var(--primary);"></i>
-                            <div>
-                                <div style="font-weight: bold; color: white;">${sName}</div>
-                                <div style="font-size: 0.8rem; color: #8696a0;">${phone}</div>
-                            </div>
-                            ${hasUnread ? '<div class="unread-dot"></div>' : ''}
-                        </div>`;
+                    const div = document.createElement('div');
+                    div.className = `chat-user-item ${currentChatUser === phone ? 'active' : ''}`;
+                    div.onclick = () => openChat(phone);
+                    div.innerHTML = `
+                        <i class="fas fa-user-circle" style="font-size:2rem; color:var(--primary)"></i>
+                        <div style="flex:1">
+                            <div style="font-weight:bold; font-size:0.9rem">${nSnap.val() || phone}</div>
+                            <div style="font-size:0.7rem; color:#888">${last.message ? last.message.substring(0,20) : 'وسائط...'}</div>
+                        </div>
+                        ${hasUnread ? '<div class="unread-dot"></div>' : ''}
+                    `;
+                    list.appendChild(div);
                 });
             });
         });
 
         function openChat(phone) {
             currentChatUser = phone;
-            document.getElementById('active-chat-name').innerText = "مراسلة: " + phone;
-            const chatRef = db.ref('chats/private/' + phone);
-            chatRef.on('value', snap => {
-                const display = document.getElementById('admin-messages-display');
-                display.innerHTML = "";
+            if(window.innerWidth <= 900) {
+                document.getElementById('chat-users-list').classList.add('hidden-mobile');
+                document.getElementById('main-chat-window').classList.add('active-mobile');
+            }
+            document.getElementById('active-chat-name').innerText = "محادثة الطالب: " + phone;
+            const ref = db.ref('chats/private/' + phone);
+            ref.on('value', snap => {
+                const area = document.getElementById('admin-messages-display');
+                area.innerHTML = "";
                 snap.forEach(child => {
                     const m = child.val();
-                    if(m.role === 'student' && !m.readByAdmin) {
-                        db.ref('chats/private/' + phone + '/' + child.key).update({ readByAdmin: true });
-                    }
-                    let content = m.type === 'image' ? `<img src="${m.message}">` : m.message;
-                    display.innerHTML += `<div class="msg ${m.role === 'admin' ? 'admin' : 'student'}">${content}</div>`;
+                    if(m.role === 'student' && !m.readByAdmin) ref.child(child.key).update({readByAdmin: true});
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `msg ${m.role === 'admin' ? 'admin' : 'student'}`;
+                    let media = m.mediaType === 'image' ? `<img src="${m.media}" onclick="window.open('${m.media}')">` : 
+                                m.mediaType === 'video' ? `<video src="${m.media}" controls style="width:100%"></video>` : "";
+                    msgDiv.innerHTML = `<div>${m.message || ''}</div>${media}<span class="time">${m.time}</span>`;
+                    area.appendChild(msgDiv);
                 });
-                display.scrollTop = display.scrollHeight;
+                area.scrollTop = area.scrollHeight;
             });
+        }
+
+        function openChatFromTable(phone) {
+            showSection('chat-admin', document.querySelector('[onclick*="chat-admin"]'));
+            openChat(phone);
+        }
+
+        function closeChatMobile() {
+            document.getElementById('chat-users-list').classList.remove('hidden-mobile');
+            document.getElementById('main-chat-window').classList.remove('active-mobile');
+            currentChatUser = null;
         }
 
         function sendAdminReply() {
             const input = document.getElementById('admin-reply-input');
             if(!currentChatUser || !input.value.trim()) return;
-            db.ref('chats/private/' + currentChatUser).push({
-                message: input.value,
-                role: 'admin',
-                type: 'text',
-                readByAdmin: true,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
+            pushMsg(input.value.trim(), null, 'text');
             input.value = "";
         }
 
-        function sendMediaMsg() {
-            const file = document.getElementById('media-input').files[0];
-            if(!file || !currentChatUser) return;
+        function uploadAdminMedia() {
+            const file = document.getElementById('admin-file').files[0];
             const reader = new FileReader();
-            reader.onload = function(e) {
-                db.ref('chats/private/' + currentChatUser).push({
-                    message: e.target.result,
-                    role: 'admin',
-                    type: 'image',
-                    readByAdmin: true,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                });
+            reader.onload = e => {
+                const type = file.type.startsWith('image') ? 'image' : 'video';
+                pushMsg("", e.target.result, type);
             };
             reader.readAsDataURL(file);
         }
 
-        // Logic Functions
-        function processBalance(type) {
-            const phone = document.getElementById('target-phone').value;
-            let amount = parseFloat(document.getElementById('balance-amount').value);
-            if(!phone || isNaN(amount)) return alert("يرجى ملء كافة الحقول!");
-            db.ref('students/' + phone).once('value', snap => {
-                if(snap.exists()){
-                    let cur = snap.val().balance || 0;
-                    let newB = (type === 'add') ? cur + amount : cur - amount;
-                    db.ref('students/' + phone).update({ 
-                        balance: newB, 
-                        totalRecharge: (snap.val().totalRecharge || 0) + (type === 'add' ? amount : 0)
+        function pushMsg(txt, media, type) {
+            db.ref('chats/private/' + currentChatUser).push({
+                message: txt, media: media, mediaType: type,
+                senderName: "الأستاذ أحمد شعبان", role: 'admin', readByAdmin: true,
+                time: new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}),
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+        }
+
+        function updateBalance(mode) {
+            const p = document.getElementById('target-phone').value;
+            const a = parseFloat(document.getElementById('balance-amount').value);
+            if(!p || !a) return alert("املا البيانات");
+            db.ref('students/'+p).once('value', s => {
+                if(s.exists()){
+                    let cur = s.val().balance || 0;
+                    db.ref('students/'+p).update({
+                        balance: mode === 'add' ? cur + a : cur - a,
+                        totalRecharge: (s.val().totalRecharge||0) + (mode==='add'?a:0)
                     });
-                    alert("تمت العملية بنجاح ✅");
-                    document.getElementById('balance-amount').value = "";
-                } else {
-                    alert("هذا الرقم غير مسجل بالمنصة!");
+                    alert("تم بنجاح ✅");
                 }
             });
         }
 
-        function toggleBan(p, s) { db.ref('students/'+p).update({status:s}); }
-
-        function sendAlert() {
+        function broadcastAlert() {
             const t = document.getElementById('global-msg').value;
-            if(t) db.ref('admin/global_alerts').push({ text: t, timestamp: Date.now() }).then(() => {
-                alert("تم بث التنبيه لجميع الطلاب ✅");
-                document.getElementById('global-msg').value = "";
-            });
+            if(t) db.ref('admin/global_alerts').push({text:t, timestamp: Date.now()}).then(()=>alert("تم!"));
+        }
+
+        function toggleBan(p, s) {
+            db.ref('students/'+p).update({status: s === 'blocked' ? 'active' : 'blocked'});
         }
 
         function filterStudents() {
