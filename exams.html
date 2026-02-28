@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة الأستاذ أحمد شعبان | نظام الاختبارات الذكي</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #d4af37;
+            --bg: #050505;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text: #e2e8f0;
+            --gold: #d4af37;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 20px; min-height: 100vh; }
+
+        .container { max-width: 800px; margin: 80px auto; }
+        
+        /* كروت الامتحانات */
+        .exam-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+        .exam-card:hover { border-color: var(--primary); transform: translateY(-5px); }
+
+        .btn {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* واجهة الامتحان */
+        #quiz-container { display: none; background: #111; padding: 30px; border-radius: 25px; border: 2px solid var(--primary); }
+        .question-text { font-size: 1.4rem; font-weight: bold; margin-bottom: 20px; color: #fff; }
+        .options-grid { display: grid; gap: 10px; }
+        .option-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--gold);
+            color: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: right;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .option-btn:hover { background: var(--gold); color: #000; }
+        
+        #timer { font-size: 1.5rem; color: #ff1744; font-weight: 900; text-align: center; margin-bottom: 20px; }
+        
+        /* لوحة النتائج للادمن */
+        #admin-results { display: none; margin-top: 40px; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; border: 1px solid var(--glass); text-align: center; }
+        th { background: var(--primary); color: #000; }
+
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; background: rgba(10,10,10,0.9);
+            padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="font-weight: 900; color: var(--primary);">📋 نظام الامتحانات</div>
+        <div id="user-info" style="font-size: 0.9rem;">جاري التحميل...</div>
+    </header>
+
+    <div class="container">
+        <div id="exams-list" class="animate__animated animate__fadeIn">
+            <h2 style="margin-bottom: 20px; color: var(--gold); text-align: center;">الامتحانات المتاحة</h2>
+            <div id="list-container"></div>
+        </div>
+
+        <div id="quiz-container" class="animate__animated animate__zoomIn">
+            <div id="timer">00:00</div>
+            <div id="question-box">
+                <div class="question-text" id="q-text"></div>
+                <div class="options-grid" id="options-box"></div>
+            </div>
+            <div style="margin-top: 20px; text-align: center; opacity: 0.6;">
+                سؤال <span id="current-q-num">1</span> من <span id="total-q-num">0</span>
+            </div>
+        </div>
+
+        <div id="admin-results">
+            <h3 style="color: var(--primary);"><i class="fas fa-chart-line"></i> نتائج الطلاب الأخيرة</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>الطالب</th>
+                        <th>الرقم</th>
+                        <th>الامتحان</th>
+                        <th>الدرجة</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <script>
+        // --- 1. الإعدادات الأساسية ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfkxj5I7UOEETOf9GRqGgqEaEoqPtPMek",
+            authDomain: "mrahmed-925d8.firebaseapp.com",
+            databaseURL: "https://mrahmed-925d8-default-rtdb.firebaseio.com",
+            projectId: "mrahmed-925d8",
+            storageBucket: "mrahmed-925d8.firebasestorage.app",
+            messagingSenderId: "83939909031",
+            appId: "1:83939909031:web:adb0b10d41b9df6c602a82",
+            measurementId: "G-HNPXCNSTCN"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const userPhone = localStorage.getItem('userLoggedIn');
+        const sessionID = Math.random().toString(36).substring(7);
+        let currentUserData = null;
+        let activeExam = null;
+        let timerInterval;
+
+        // --- 2. الحماية والتحقق ---
+        if (!userPhone) {
+            window.location.href = "go.html";
+        } else {
+            db.ref('students/' + userPhone).on('value', (snapshot) => {
+                currentUserData = snapshot.val();
+                if (!currentUserData) { logout(); return; }
+                if (currentUserData.status === "blocked") { window.location.href = "contact.html"; return; }
+                
+                // منع تسجيل الدخول المتعدد
+                if (currentUserData.currentSession && currentUserData.currentSession !== sessionID) {
+                    alert("تم اكتشاف دخول من جهاز آخر!");
+                    logout();
+                }
+
+                document.getElementById('user-info').innerText = currentUserData.name;
+
+                // إظهار لوحة الأدمن
+                if (currentUserData.role === "admin") {
+                    document.getElementById('admin-results').style.display = 'block';
+                    loadAdminResults();
+                }
+                
+                loadExams();
+            });
+
+            // تحديث الجلسة الحالية
+            db.ref('students/' + userPhone + '/currentSession').set(sessionID);
+        }
+
+        // --- 3. إدارة الامتحانات ---
+        function loadExams() {
+            db.ref('exams').on('value', (snapshot) => {
+                const exams = snapshot.val();
+                const container = document.getElementById('list-container');
+                container.innerHTML = '';
+
+                // التحقق من الاشتراك (لازم كورس واحد على الاقل)
+                const hasCourse = currentUserData.courses && Object.keys(currentUserData.courses).length > 0;
+
+                for (let key in exams) {
+                    const exam = exams[key];
+                    const attempts = (currentUserData.examAttempts && currentUserData.examAttempts[key]) || 0;
+                    
+                    const card = document.createElement('div');
+                    card.className = 'exam-card';
+                    card.innerHTML = `
+                        <div>
+                            <h3 style="color: var(--gold);">${exam.title}</h3>
+                            <small>المدة: ${exam.duration} دقيقة | المحاولات: ${attempts}/${exam.maxAttempts}</small>
+                        </div>
+                        <button onclick="startExam('${key}')" class="btn" 
+                            ${(!hasCourse || attempts >= exam.maxAttempts) ? 'disabled style="filter:grayscale(1)"' : ''}>
+                            ${hasCourse ? (attempts >= exam.maxAttempts ? 'انتهت المحاولات' : 'ابدأ الآن') : 'اشترك لتفتح'}
+                        </button>
+                    `;
+                    container.appendChild(card);
+                }
+            });
+        }
+
+        // --- 4. منطق الامتحان ---
+        function startExam(examId) {
+            db.ref('exams/' + examId).once('value', (snap) => {
+                activeExam = snap.val();
+                activeExam.id = examId;
+                
+                // لخبطة الأسئلة
+                activeExam.questions = shuffleArray(activeExam.questions);
+                
+                document.getElementById('exams-list').style.display = 'none';
+                document.getElementById('quiz-container').style.display = 'block';
+                
+                startTimer(activeExam.duration * 60);
+                showQuestion(0, 0);
+            });
+        }
+
+        function showQuestion(index, score) {
+            if (index >= activeExam.questions.length) {
+                finishExam(score);
+                return;
+            }
+
+            const q = activeExam.questions[index];
+            document.getElementById('q-text').innerText = q.text;
+            document.getElementById('current-q-num').innerText = index + 1;
+            document.getElementById('total-q-num').innerText = activeExam.questions.length;
+
+            const optionsBox = document.getElementById('options-box');
+            optionsBox.innerHTML = '';
+
+            // لخبطة الإجابات
+            const shuffledOptions = shuffleArray([...q.options]);
+
+            shuffledOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    const isCorrect = (opt === q.correctAnswer);
+                    showQuestion(index + 1, score + (isCorrect ? 1 : 0));
+                };
+                optionsBox.appendChild(btn);
+            });
+        }
+
+        function startTimer(seconds) {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                document.getElementById('timer').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                if (seconds <= 0) {
+                    clearInterval(timerInterval);
+                    finishExam(0); // انتهى الوقت
+                }
+                seconds--;
+            }, 1000);
+        }
+
+        function finishExam(score) {
+            clearInterval(timerInterval);
+            const finalGrade = (score / activeExam.questions.length) * 100;
+            
+            // حفظ النتيجة في فايرباز
+            const attemptRef = db.ref('students/' + userPhone + '/examAttempts/' + activeExam.id);
+            attemptRef.transaction((current) => (current || 0) + 1);
+
+            db.ref('examResults').push({
+                studentName: currentUserData.name,
+                studentPhone: userPhone,
+                examTitle: activeExam.title,
+                score: finalGrade.toFixed(1) + "%",
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            alert(`انتهى الامتحان! درجتك: ${finalGrade.toFixed(1)}%`);
+            location.reload();
+        }
+
+        // --- 5. وظائف الأدمن والمساعدة ---
+        function loadAdminResults() {
+            db.ref('examResults').limitToLast(20).on('value', (snap) => {
+                const body = document.getElementById('results-body');
+                body.innerHTML = '';
+                snap.forEach(child => {
+                    const res = child.val();
+                    body.innerHTML = `
+                        <tr>
+                            <td>${res.studentName}</td>
+                            <td>${res.studentPhone}</td>
+                            <td>${res.examTitle}</td>
+                            <td style="color: var(--gold); font-weight: bold;">${res.score}</td>
+                        </tr>
+                    ` + body.innerHTML;
+                });
+            });
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function logout() { localStorage.clear(); window.location.href = "go.html"; }
+    </script>
+</body>
+</html>
