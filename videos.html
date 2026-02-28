@@ -12,7 +12,7 @@
         .container { max-width: 1000px; margin: 100px auto 20px; padding: 0 20px; }
         
         #admin-upload-panel { display: none; background: #111; padding: 25px; border-radius: 20px; border: 2px dashed var(--primary); margin-bottom: 40px; }
-        input, textarea, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #1a1a1a; color: #fff; }
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #1a1a1a; color: #fff; }
         
         .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .course-card { background: #111; border-radius: 20px; overflow: hidden; border: 1px solid #222; transition: 0.3s; position: relative; }
@@ -24,10 +24,10 @@
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: #000; z-index: 10000; justify-content: center; align-items: center; 
         }
-        video { width: 90%; max-height: 80vh; border-radius: 15px; box-shadow: 0 0 50px rgba(0,0,0,1); pointer-events: none; }
+        video { width: 90%; max-height: 80vh; border-radius: 15px; box-shadow: 0 0 50px rgba(0,0,0,1); }
         
         #watermark {
-            position: absolute; color: rgba(255, 255, 255, 0.2); font-size: 14px;
+            position: absolute; color: rgba(255, 255, 255, 0.15); font-size: 14px;
             pointer-events: none; z-index: 10001; white-space: nowrap;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5); font-weight: bold;
         }
@@ -51,7 +51,7 @@
             <h2 style="color: var(--primary);">إضافة كورس/محاضرة جديدة</h2>
             <input type="text" id="course-name" placeholder="اسم الكورس">
             <textarea id="course-desc" placeholder="وصف الكورس"></textarea>
-            <input type="text" id="video-url" placeholder="رابط الفيديو (Direct Link / Dropbox / Google Drive)">
+            <input type="text" id="video-url" placeholder="رابط الفيديو المباشر">
             <input type="number" id="course-price" placeholder="سعر الكورس (ج.م)">
             <button class="btn btn-gold" onclick="uploadCourse()">نشر الكورس</button>
         </section>
@@ -63,7 +63,7 @@
     <div id="video-player-container">
         <div class="close-video" onclick="closeVideo()">إغلاق الفيديو ×</div>
         <div id="watermark"></div>
-        <video id="protected-video" controlsList="nodownload" disablePictureInPicture oncontextmenu="return false;">
+        <video id="protected-video" controlsList="nodownload" oncontextmenu="return false;">
             <source id="video-source" src="" type="video/mp4">
         </video>
     </div>
@@ -88,13 +88,19 @@
         let userData = null;
         let isAdmin = false;
 
+        // --- 1. جلب بيانات المستخدم ---
         if (!userPhone) {
             window.location.href = "go.html";
         } else {
             db.ref('students/' + userPhone).on('value', (snap) => {
                 userData = snap.val();
                 if (!userData) { window.location.href = "go.html"; return; }
-                if (userData.status === "blocked") { window.location.href = "contact.html"; return; }
+                
+                // هنا التعديل: لا نقوم بتغيير الحالة للحظر أبداً، فقط نقرأها
+                if (userData.status === "blocked") {
+                    document.body.innerHTML = "<h1 style='color:white; text-align:center; margin-top:100px;'>عذراً، حسابك معطل حالياً. تواصل مع الدعم.</h1>";
+                    return;
+                }
                 
                 document.getElementById('user-status').innerText = userData.name;
                 
@@ -106,6 +112,7 @@
             });
         }
 
+        // --- 2. وظائف الأدمن ---
         function uploadCourse() {
             const name = document.getElementById('course-name').value;
             const desc = document.getElementById('course-desc').value;
@@ -113,9 +120,10 @@
             const price = document.getElementById('course-price').value;
             if(!name || !url || !price) return alert("اكمل البيانات");
             db.ref('courses').push({ name, desc, url, price: parseInt(price) })
-            .then(() => { alert("تم النشر"); location.reload(); });
+            .then(() => { alert("تم النشر بنجاح"); location.reload(); });
         }
 
+        // --- 3. وظائف الطالب ---
         function loadCourses() {
             db.ref('courses').on('value', (snap) => {
                 const container = document.getElementById('course-display');
@@ -130,7 +138,7 @@
                             <div class="course-info">
                                 <h3>${c.name}</h3>
                                 <p style="font-size:0.8rem; opacity:0.7">${c.desc}</p>
-                                <div class="course-price">${isAdmin ? 'دخول الأدمن' : c.price + ' ج.م'}</div>
+                                <div class="course-price">${isAdmin ? 'وضع المعلم' : c.price + ' ج.م'}</div>
                                 <button class="btn btn-gold" style="width:100%; margin-top:15px;" 
                                     onclick="handleCourseAction('${key}', '${c.url}', ${c.price}, ${isBought})">
                                     ${isBought ? 'مشاهدة الآن' : 'شراء المحاضرة'}
@@ -152,12 +160,13 @@
                         db.ref('students/' + userPhone).update({
                             balance: balance - price,
                             [`courses/${id}`]: true
-                        }).then(() => alert("تم الشراء!"));
-                    } else { alert("رصيدك لا يكفي"); }
+                        }).then(() => alert("تم الشراء بنجاح!"));
+                    } else { alert("عذراً، رصيدك غير كافٍ."); }
                 }
             }
         }
 
+        // --- 4. مشغل الفيديو والحماية (بدون حظر) ---
         function openProtectedVideo(url) {
             const player = document.getElementById('video-player-container');
             const video = document.getElementById('protected-video');
@@ -170,18 +179,16 @@
             
             watermark.innerText = `${userData.name} - ${userPhone}`;
             moveWatermark();
-            
-            // تعتيم الفيديو عند الخروج من التبويب
-            window.onblur = () => { video.style.filter = "blur(50px)"; };
-            window.onfocus = () => { video.style.filter = "none"; };
         }
 
         function moveWatermark() {
             const wm = document.getElementById('watermark');
-            setInterval(() => {
-                wm.style.left = Math.random() * (window.innerWidth - 150) + 'px';
+            const move = () => {
+                wm.style.left = Math.random() * (window.innerWidth - 180) + 'px';
                 wm.style.top = Math.random() * (window.innerHeight - 50) + 'px';
-            }, 4000);
+            };
+            move();
+            setInterval(move, 5000);
         }
 
         function closeVideo() {
@@ -190,26 +197,29 @@
             document.getElementById('video-player-container').style.display = 'none';
         }
 
-        // حماية بدون حظر تلقائي - استثناء للأدمن
+        // إغلاق الفيديو فقط إذا فتح الأدوات (للطالب فقط)
         setInterval(() => {
-            if (isAdmin) return; // الأدمن معفي من القيود
-
+            if (isAdmin) return;
             const threshold = 160;
-            const devtoolsOpen = window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold;
-            
-            if (devtoolsOpen) {
+            const isDevOpen = window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold;
+            if (isDevOpen) {
                 closeVideo();
-                alert("يرجى إغلاق أدوات المطور أو برامج تسجيل الشاشة للمتابعة.");
+                // لا يوجد كود حظر هنا نهائياً
             }
         }, 1000);
 
-        // منع الاختصارات
+        // منع الاختصارات (للطالب فقط)
         document.onkeydown = (e) => {
             if (isAdmin) return true;
             if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) {
                 return false;
             }
         };
+
+        // تعتيم الفيديو عند محاولة تسجيل الشاشة/فقدان الفوكس
+        window.onblur = () => { if(!isAdmin) document.getElementById('protected-video').style.filter = "blur(60px)"; };
+        window.onfocus = () => { document.getElementById('protected-video').style.filter = "none"; };
+
     </script>
 </body>
 </html>
