@@ -54,12 +54,13 @@
         }
         .wallet-box:hover { background: var(--gold); color: #000; }
 
-        #alert-overlay {
+        /* الأقسام المنبثقة (Alerts & Wallet) */
+        .overlay-common {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
             display: none; justify-content: center; align-items: center; z-index: 9999;
         }
-        .alert-modal {
+        .modal-common {
             background: #111; border: 2px solid var(--primary);
             padding: 30px; border-radius: 25px; width: 90%; max-width: 500px;
             text-align: center; position: relative; box-shadow: 0 0 50px rgba(212, 175, 55, 0.2);
@@ -105,12 +106,30 @@
 
     <div id="particles-js"></div>
 
-    <div id="alert-overlay">
-        <div class="alert-modal animate__animated animate__zoomIn">
+    <div id="alert-overlay" class="overlay-common">
+        <div class="modal-common animate__animated animate__zoomIn">
             <i class="fas fa-brain" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
             <h2 style="color:var(--primary); margin-bottom:10px;">رسالة من الأستاذ 📜</h2>
             <p id="alert-text" style="color:#cbd5e1; line-height:1.6; margin-bottom:25px;"></p>
             <button onclick="closeAlertBox()" style="background:var(--primary); color:#000; border:none; padding:12px; border-radius:10px; width:100%; font-weight:bold; cursor:pointer;">استوعبت الرسالة ✅</button>
+        </div>
+    </div>
+
+    <div id="wallet-overlay" class="overlay-common">
+        <div class="modal-common animate__animated animate__fadeInUp">
+            <i class="fas fa-wallet" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
+            <h2 style="color:var(--primary); margin-bottom:15px;">شحن رصيد المحفظة 💰</h2>
+            <p style="color:#cbd5e1; line-height:1.8; margin-bottom:20px; font-size: 1.05rem;">
+                لشحن رصيدك، يرجى تحويل المبلغ المطلوب إلى رقم فودافون كاش الخاص بالأستاذ: <br>
+                <strong style="color: #fff; font-size: 1.3rem; letter-spacing: 1px;">01025768529</strong><br>
+                بعد التحويل، قم بإرسال <span style="color: var(--primary);">صورة الإيصال (سكرين شوت)</span> عبر الواتساب لتفعيل الرصيد فوراً.
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <a href="https://wa.me/201025768529" target="_blank" style="background:#25d366; color:#fff; text-decoration:none; padding:12px; border-radius:12px; font-weight:bold; display: flex; align-items:center; justify-content:center; gap:10px;">
+                    <i class="fab fa-whatsapp" style="font-size: 1.4rem;"></i> إرسال الإيصال للأستاذ
+                </a>
+                <button onclick="closeWalletBox()" style="background:transparent; color:var(--text); border:1px solid var(--glass); padding:10px; border-radius:12px; cursor:pointer; opacity: 0.7;">إغلاق</button>
+            </div>
         </div>
     </div>
 
@@ -126,10 +145,10 @@
             </ul>
         </nav>
 
-        <a href="tel:01025768529" class="wallet-box" title="شحن المحفظة">
+        <div onclick="openWalletBox()" class="wallet-box" title="شحن المحفظة">
             <i class="fas fa-coins"></i>
             <span id="user-balance">0</span> ج.م
-        </a>
+        </div>
 
         <div style="display: flex; gap: 15px; align-items: center; margin-right: 10px;">
             <a href="admin.html" id="admin-link" title="لوحة الإدارة" style="display: none;"><i class="fas fa-user-shield" style="color: var(--primary); font-size: 1.3rem;"></i></a>
@@ -200,7 +219,6 @@
         const userName = localStorage.getItem('userName');
         const sessionID = Math.random().toString(36).substring(7);
 
-        // مصفوفة لتخزين التنبيهات غير المقروءة
         let pendingAlerts = [];
 
         if (!userPhone) {
@@ -236,20 +254,16 @@
             });
             myPresenceRef.onDisconnect().remove();
 
-            // جلب كافة التنبيهات
             db.ref('admin/global_alerts').on('value', (snapshot) => {
                 const allAlerts = snapshot.val();
                 if (allAlerts) {
                     const seenAlerts = JSON.parse(localStorage.getItem('seenAlerts') || '[]');
-                    pendingAlerts = []; // إعادة تصفير القائمة
-                    
+                    pendingAlerts = [];
                     Object.keys(allAlerts).forEach(key => {
                         if (!seenAlerts.includes(key)) {
                             pendingAlerts.push({ key: key, text: allAlerts[key].text });
                         }
                     });
-
-                    // إذا كانت هناك تنبيهات ولم يكن المودال مفتوحاً حالياً، ابدأ العرض
                     if (pendingAlerts.length > 0 && document.getElementById('alert-overlay').style.display !== 'flex') {
                         showNextAlert();
                     }
@@ -257,6 +271,15 @@
             });
         }
 
+        // دوال المحفظة
+        function openWalletBox() {
+            document.getElementById('wallet-overlay').style.display = 'flex';
+        }
+        function closeWalletBox() {
+            document.getElementById('wallet-overlay').style.display = 'none';
+        }
+
+        // دوال التنبيهات
         function showNextAlert() {
             if (pendingAlerts.length > 0) {
                 const current = pendingAlerts[0];
@@ -273,18 +296,10 @@
                 if (!seen.includes(key)) seen.push(key);
                 localStorage.setItem('seenAlerts', JSON.stringify(seen));
             }
-            
-            // إخفاء المودال مؤقتاً
             document.getElementById('alert-overlay').style.display = 'none';
-            
-            // إزالة التنبيه الذي تمت رؤيته من القائمة المعلقة
             pendingAlerts.shift();
-
-            // فحص إذا كان هناك تنبيه آخر لعرضه بعد فترة قصيرة جداً
             setTimeout(() => {
-                if (pendingAlerts.length > 0) {
-                    showNextAlert();
-                }
+                if (pendingAlerts.length > 0) showNextAlert();
             }, 300);
         }
 
