@@ -50,7 +50,9 @@
             background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold);
             padding: 5px 15px; border-radius: 12px; color: var(--gold);
             font-weight: 900; display: flex; align-items: center; gap: 8px; font-size: 0.9rem;
+            cursor: pointer; text-decoration: none;
         }
+        .wallet-box:hover { background: var(--gold); color: #000; }
 
         #alert-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -86,6 +88,10 @@
 
         .online-dot { height: 10px; width: 10px; background-color: #00ff00; border-radius: 50%; display: inline-block; margin-left: 6px; box-shadow: 0 0 10px #00ff00; }
 
+        .credits { margin-top: 20px; font-size: 0.9rem; border-top: 1px solid var(--glass); padding-top: 15px; }
+        .credits a { color: var(--primary); text-decoration: none; font-weight: bold; }
+        .credits a:hover { text-decoration: underline; }
+
         @media (max-width: 1024px) {
             header nav { display: none; }
             .mobile-nav { display: flex; }
@@ -120,10 +126,10 @@
             </ul>
         </nav>
 
-        <div class="wallet-box">
+        <a href="tel:01025768529" class="wallet-box" title="شحن المحفظة">
             <i class="fas fa-coins"></i>
             <span id="user-balance">0</span> ج.م
-        </div>
+        </a>
 
         <div style="display: flex; gap: 15px; align-items: center; margin-right: 10px;">
             <a href="admin.html" id="admin-link" title="لوحة الإدارة" style="display: none;"><i class="fas fa-user-shield" style="color: var(--primary); font-size: 1.3rem;"></i></a>
@@ -164,6 +170,12 @@
             <span class="online-dot"></span> عدد المتصلين الآن: <span id="real-count" style="color: var(--primary);">0</span>
         </div>
         <p style="opacity: 0.8; margin-bottom: 15px;">جميع الحقوق محفوظة لمنصة الأستاذ أحمد شعبان © 2026</p>
+        
+        <div class="credits">
+            تصميم وتنفيذ <br>
+            <a href="https://kemo-omar.github.io/Kareem/" target="_blank">كريم</a> & 
+            <a href="https://mostafa7html7-pixel.github.io/Abqarieno-/" target="_blank">عبقرينو</a>
+        </div>
     </footer>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -186,10 +198,23 @@
 
         const userPhone = localStorage.getItem('userLoggedIn');
         const userName = localStorage.getItem('userName');
+        const sessionID = Math.random().toString(36).substring(7);
+
+        // مصفوفة لتخزين التنبيهات غير المقروءة
+        let pendingAlerts = [];
 
         if (!userPhone) {
             window.location.href = "go.html"; 
         } else {
+            const sessionRef = db.ref('students/' + userPhone + '/currentSession');
+            sessionRef.set(sessionID);
+            sessionRef.on('value', (snapshot) => {
+                if (snapshot.val() && snapshot.val() !== sessionID) {
+                    alert("تم تسجيل الدخول من جهاز آخر. سيتم إغلاق الجلسة الحالية.");
+                    logout();
+                }
+            });
+
             db.ref('students/' + userPhone).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (!data) { logout(); return; }
@@ -211,27 +236,56 @@
             });
             myPresenceRef.onDisconnect().remove();
 
-            db.ref('admin/global_alerts').limitToLast(1).on('child_added', (snap) => {
-                const alertData = snap.val();
-                const alertKey = snap.key;
-                const seenAlerts = JSON.parse(localStorage.getItem('seenAlerts') || '[]');
+            // جلب كافة التنبيهات
+            db.ref('admin/global_alerts').on('value', (snapshot) => {
+                const allAlerts = snapshot.val();
+                if (allAlerts) {
+                    const seenAlerts = JSON.parse(localStorage.getItem('seenAlerts') || '[]');
+                    pendingAlerts = []; // إعادة تصفير القائمة
+                    
+                    Object.keys(allAlerts).forEach(key => {
+                        if (!seenAlerts.includes(key)) {
+                            pendingAlerts.push({ key: key, text: allAlerts[key].text });
+                        }
+                    });
 
-                if (alertData && !seenAlerts.includes(alertKey)) {
-                    document.getElementById('alert-text').innerText = alertData.text;
-                    document.getElementById('alert-overlay').style.display = 'flex';
-                    localStorage.setItem('tempAlertKey', alertKey);
+                    // إذا كانت هناك تنبيهات ولم يكن المودال مفتوحاً حالياً، ابدأ العرض
+                    if (pendingAlerts.length > 0 && document.getElementById('alert-overlay').style.display !== 'flex') {
+                        showNextAlert();
+                    }
                 }
             });
         }
 
+        function showNextAlert() {
+            if (pendingAlerts.length > 0) {
+                const current = pendingAlerts[0];
+                document.getElementById('alert-text').innerText = current.text;
+                document.getElementById('alert-overlay').style.display = 'flex';
+                localStorage.setItem('tempAlertKey', current.key);
+            }
+        }
+
         function closeAlertBox() {
-            document.getElementById('alert-overlay').style.display = 'none';
             const key = localStorage.getItem('tempAlertKey');
             if (key) {
                 let seen = JSON.parse(localStorage.getItem('seenAlerts') || '[]');
-                seen.push(key);
+                if (!seen.includes(key)) seen.push(key);
                 localStorage.setItem('seenAlerts', JSON.stringify(seen));
             }
+            
+            // إخفاء المودال مؤقتاً
+            document.getElementById('alert-overlay').style.display = 'none';
+            
+            // إزالة التنبيه الذي تمت رؤيته من القائمة المعلقة
+            pendingAlerts.shift();
+
+            // فحص إذا كان هناك تنبيه آخر لعرضه بعد فترة قصيرة جداً
+            setTimeout(() => {
+                if (pendingAlerts.length > 0) {
+                    showNextAlert();
+                }
+            }, 300);
         }
 
         db.ref('admin/online_list').on('value', (snap) => {
