@@ -14,16 +14,13 @@
         .gold-text { color: #d4af37; }
         .gold-bg { background: #d4af37; }
         
-        /* العلامة المائية المحمية */
         #watermark-protected {
             position: absolute; z-index: 999999; pointer-events: none;
-            color: rgba(255, 255, 255, 0.2); font-size: 16px; font-weight: bold;
+            color: rgba(255, 255, 255, 0.25); font-size: 14px; font-weight: bold;
             white-space: nowrap; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-            transition: all 0.5s ease-in-out;
+            transition: all 0.6s ease-in-out;
         }
 
-        /* منع تصوير الشاشة في بعض المتصفحات */
-        @media screen { video { filter: brightness(100%); } }
         video::-webkit-media-controls-download-button { display:none; }
         video::-webkit-media-controls-enclosure { overflow:hidden; }
     </style>
@@ -35,24 +32,20 @@
             <a href="index.html" class="gold-text text-xl"><i class="fa-solid fa-house"></i></a>
             <h1 class="text-lg font-black italic">أحمد <span class="gold-text">شعبان</span></h1>
         </div>
-        <div class="flex items-center gap-4">
-            <button onclick="window.location.href='exams.html'" class="bg-white/5 border border-gold-text text-gold-text px-3 py-1 rounded-lg text-xs hover:bg-gold-text hover:text-black transition font-bold">
-                <i class="fas fa-pen-nib ml-1"></i> امتحن الآن
-            </button>
-            <div class="text-left border-r border-white/10 pr-4 hidden md:block">
+        <div class="flex items-center gap-4 text-left">
+            <div class="border-r border-white/10 pr-4 hidden md:block">
                 <p id="user-name" class="text-sm font-bold italic">...</p>
                 <p id="user-role-display" class="text-[10px] gold-text opacity-70 italic font-bold uppercase"></p>
             </div>
         </div>
     </nav>
 
-    <div id="admin-panel" class="hidden bg-white/5 border-b border-gold-text/20 p-6 animate-pulse">
+    <div id="admin-panel" class="hidden bg-white/5 border-b border-gold-text/20 p-6">
         <div class="max-w-6xl mx-auto">
-            <h2 class="gold-text font-black mb-4"><i class="fas fa-user-shield ml-2"></i> لوحة التحكم في المحتوى</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button onclick="toggleModal('package-modal')" class="bg-gold-text text-black p-3 rounded-xl font-bold hover:scale-105 transition">إضافة باقة جديدة (250ج)</button>
-                <button onclick="toggleModal('lecture-modal')" class="bg-blue-600 text-white p-3 rounded-xl font-bold hover:scale-105 transition">إضافة محاضرة/فيديو</button>
-                <button onclick="toggleModal('logs-modal')" class="bg-white/10 text-white p-3 rounded-xl font-bold hover:scale-105 transition border border-white/10">سجلات المشاهدة</button>
+            <h2 class="gold-text font-black mb-4"><i class="fas fa-user-shield ml-2"></i> لوحة التحكم</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="toggleModal('package-modal')" class="bg-gold-text text-black p-3 rounded-xl font-bold hover:scale-105 transition">إضافة باقة جديدة</button>
+                <button onclick="openLectureModal()" class="bg-blue-600 text-white p-3 rounded-xl font-bold hover:scale-105 transition">إضافة محاضرة جديدة</button>
             </div>
         </div>
     </div>
@@ -62,22 +55,26 @@
             <div class="flex justify-between items-end mb-8">
                 <div>
                     <h2 id="view-title" class="text-3xl font-black text-white italic">الباقات المتاحة</h2>
-                    <p class="text-gray-500 text-sm mt-2">اختر الباقة الدراسية لبدء التعلم بعمق</p>
+                    <p class="text-gray-500 text-sm mt-2">اختر الباقة لمتابعة دروسك</p>
                 </div>
-                <button id="back-to-pkgs" class="hidden text-gold-text font-bold" onclick="loadPackages()"><i class="fas fa-arrow-right ml-2"></i> العودة للباقات</button>
+                <button id="back-to-pkgs" class="hidden text-gold-text font-bold" onclick="loadPackages()">
+                    <i class="fas fa-arrow-right ml-2"></i> العودة للباقات
+                </button>
             </div>
             
-            <div id="dynamic-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                </div>
+            <div id="dynamic-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
         </div>
     </main>
 
-    <section id="player-view" class="hidden fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center p-0 lg:p-10">
-        <div class="w-full max-w-5xl relative aspect-video bg-black shadow-[0_0_100px_rgba(212,175,55,0.1)] group rounded-2xl overflow-hidden">
-            <div id="watermark-protected"></div> <video id="video-engine" class="w-full h-full" controlsList="nodownload"></video>
-            <button onclick="closeVideo()" class="absolute top-5 right-5 z-[210] bg-red-600 text-white w-12 h-12 rounded-full opacity-0 group-hover:opacity-100 transition"><i class="fas fa-times"></i></button>
+    <section id="player-view" class="hidden fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-5xl relative aspect-video bg-black rounded-2xl overflow-hidden group">
+            <div id="watermark-protected"></div>
+            <video id="video-engine" class="w-full h-full" controls controlsList="nodownload"></video>
+            <button onclick="closeVideo()" class="absolute top-5 right-5 z-[210] bg-red-600 text-white w-10 h-10 rounded-full opacity-0 group-hover:opacity-100 transition">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        <h3 id="playing-title" class="mt-6 text-2xl font-black gold-text italic"></h3>
+        <h3 id="playing-title" class="mt-6 text-xl font-black gold-text italic"></h3>
     </section>
 
     <div id="package-modal" class="hidden fixed inset-0 z-[300] bg-black/95 flex items-center justify-center p-4">
@@ -85,8 +82,19 @@
             <h3 class="gold-text text-xl font-black mb-6">إنشاء باقة دراسية</h3>
             <input id="pkg-name" type="text" placeholder="اسم الباقة" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-4 focus:outline-none focus:border-gold-text">
             <textarea id="pkg-desc" placeholder="وصف الباقة" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-6"></textarea>
-            <button onclick="savePackage()" class="w-full gold-bg text-black font-black p-4 rounded-xl">حفظ الباقة (250 ج.م)</button>
+            <button onclick="savePackage()" class="w-full gold-bg text-black font-black p-4 rounded-xl">حفظ الباقة</button>
             <button onclick="toggleModal('package-modal')" class="w-full text-gray-500 mt-4">إلغاء</button>
+        </div>
+    </div>
+
+    <div id="lecture-modal" class="hidden fixed inset-0 z-[300] bg-black/95 flex items-center justify-center p-4">
+        <div class="glass w-full max-w-md p-8 rounded-3xl">
+            <h3 class="gold-text text-xl font-black mb-6">إضافة محاضرة جديدة</h3>
+            <select id="target-pkg" class="w-full bg-black border border-white/10 p-4 rounded-xl mb-4 text-white"></select>
+            <input id="lec-name" type="text" placeholder="اسم المحاضرة" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-4">
+            <input id="lec-url" type="text" placeholder="رابط الفيديو (Direct or M3U8)" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-6">
+            <button onclick="saveLecture()" class="w-full bg-blue-600 text-white font-black p-4 rounded-xl">حفظ المحاضرة</button>
+            <button onclick="toggleModal('lecture-modal')" class="w-full text-gray-500 mt-4">إلغاء</button>
         </div>
     </div>
 
@@ -111,44 +119,40 @@
 
         if (!userPhone) window.location.href = 'go.html';
 
-        // 1. التحقق من الهوية والصلاحيات
+        // 1. Auth Check
         db.ref('students/' + userPhone).on('value', (snap) => {
             currentUser = snap.val();
-            if (!currentUser || currentUser.status === 'blocked') {
-                localStorage.clear(); window.location.href = 'go.html'; return;
-            }
+            if (!currentUser || currentUser.status === 'blocked') { logout(); return; }
             
             document.getElementById('user-name').innerText = currentUser.name;
             document.getElementById('user-role-display').innerText = currentUser.role === 'admin' ? 'مدير المنصة' : 'طالب';
             document.getElementById('watermark-protected').innerText = `${currentUser.name} | ${userPhone}`;
             
             if (currentUser.role === 'admin') document.getElementById('admin-panel').classList.remove('hidden');
-            
             loadPackages();
         });
 
-        // 2. إدارة الباقات
+        // 2. Load Packages
         function loadPackages() {
             document.getElementById('back-to-pkgs').classList.add('hidden');
             document.getElementById('view-title').innerText = "الباقات المتاحة";
             const grid = document.getElementById('dynamic-grid');
-            grid.innerHTML = '<p class="col-span-full text-center gold-text">جاري جلب الباقات الملكية...</p>';
+            grid.innerHTML = '<p class="col-span-full text-center gold-text">جاري التحميل...</p>';
 
             db.ref('packages').once('value', (snap) => {
                 grid.innerHTML = '';
-                if (!snap.exists()) { grid.innerHTML = '<p class="col-span-full text-center">لا يوجد باقات حالياً.</p>'; return; }
+                if (!snap.exists()) { grid.innerHTML = '<p class="col-span-full text-center">لا توجد باقات.</p>'; return; }
                 
                 snap.forEach((child) => {
                     const pkg = child.val();
                     const div = document.createElement('div');
-                    div.className = "glass p-8 rounded-[2.5rem] border border-white/5 hover:border-gold-text transition-all cursor-pointer group relative overflow-hidden";
+                    div.className = "glass p-8 rounded-3xl border border-white/5 hover:border-gold-text transition-all cursor-pointer group";
                     div.innerHTML = `
-                        <div class="absolute -right-5 -top-5 bg-gold-text/10 p-10 rounded-full group-hover:bg-gold-text/20 transition-all"><i class="fas fa-box-open text-3xl gold-text"></i></div>
                         <h3 class="text-2xl font-black mb-3 italic">${pkg.name}</h3>
-                        <p class="text-gray-500 text-sm leading-relaxed mb-6">${pkg.desc}</p>
-                        <div class="flex justify-between items-center border-t border-white/10 pt-6">
-                            <span class="text-xl font-black gold-text italic">250 ج.م</span>
-                            <i class="fas fa-chevron-left text-xs opacity-50 group-hover:translate-x-[-5px] transition-transform"></i>
+                        <p class="text-gray-500 text-sm mb-6">${pkg.desc}</p>
+                        <div class="flex justify-between items-center border-t border-white/10 pt-4">
+                            <span class="gold-text font-black">250 ج.م</span>
+                            <span class="text-xs opacity-50 italic">اضغط للعرض</span>
                         </div>
                     `;
                     div.onclick = () => loadLectures(child.key, pkg.name);
@@ -157,7 +161,7 @@
             });
         }
 
-        // 3. إدارة المحاضرات (داخل الباقة)
+        // 3. Load Lectures & Show "Exam" Button
         function loadLectures(pkgId, pkgName) {
             document.getElementById('back-to-pkgs').classList.remove('hidden');
             document.getElementById('view-title').innerText = pkgName;
@@ -165,28 +169,32 @@
             grid.innerHTML = '';
 
             db.ref(`lectures/${pkgId}`).once('value', (snap) => {
-                if (!snap.exists()) { grid.innerHTML = '<p class="col-span-full text-center opacity-50">هذه الباقة فارغة حالياً.</p>'; return; }
+                if (!snap.exists()) { grid.innerHTML = '<p class="col-span-full text-center">لا توجد محاضرات هنا.</p>'; return; }
                 
                 snap.forEach((child) => {
                     const lec = child.val();
                     const div = document.createElement('div');
-                    div.className = "glass p-4 rounded-2xl flex items-center gap-4 hover:bg-white/5 transition cursor-pointer border border-white/5";
+                    div.className = "glass p-5 rounded-2xl flex flex-col gap-4 border border-white/5";
                     div.innerHTML = `
-                        <div class="w-14 h-14 gold-bg rounded-xl flex items-center justify-center text-black font-black italic shadow-lg shadow-gold-text/20">LEC</div>
-                        <div class="flex-1">
-                            <h4 class="font-bold">${lec.name}</h4>
-                            <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mt-1">${lec.duration || 'مدتها غير محددة'}</p>
+                        <div class="flex items-center gap-4 cursor-pointer" onclick="startLearning('${lec.url}', '${lec.name}')">
+                            <div class="w-12 h-12 gold-bg rounded-lg flex items-center justify-center text-black font-black">LEC</div>
+                            <div class="flex-1">
+                                <h4 class="font-bold">${lec.name}</h4>
+                                <p class="text-[10px] text-gray-500 uppercase">اضغط للمشاهدة</p>
+                            </div>
                         </div>
-                        <div class="bg-white/10 p-3 rounded-full"><i class="fas fa-play text-[10px] gold-text"></i></div>
+                        <button onclick="window.location.href='exams.html'" class="w-full bg-white/5 border border-gold-text/30 text-gold-text py-2 rounded-xl text-xs font-bold hover:bg-gold-text hover:text-black transition">
+                            <i class="fas fa-edit ml-2"></i> دخول الامتحان الخاص بالمحاضرة
+                        </button>
                     `;
-                    div.onclick = () => startLearning(lec.url, lec.name, child.key);
                     grid.appendChild(div);
                 });
             });
         }
 
-        // 4. نظام الحماية والعلامة المائية
-        function startLearning(url, title, lecId) {
+        // 4. Video System
+        function startLearning(url, title) {
+            if (!url) return alert("الرابط غير صالح");
             const player = document.getElementById('player-view');
             const video = document.getElementById('video-engine');
             document.getElementById('playing-title').innerText = title;
@@ -194,60 +202,65 @@
 
             if (Hls.isSupported() && url.includes('.m3u8')) {
                 const hls = new Hls(); hls.loadSource(url); hls.attachMedia(video);
-            } else {
-                video.src = url;
-            }
+            } else { video.src = url; }
             video.play();
 
-            // تسجيل السجل للأدمن
             db.ref(`admin/watch_logs/${userPhone}`).push({
-                studentName: currentUser.name,
-                videoTitle: title,
-                time: new Date().toLocaleString(),
-                timestamp: firebase.database.ServerValue.TIMESTAMP
+                name: currentUser.name, video: title, time: new Date().toLocaleString()
             });
 
-            // تحريك العلامة المائية
             moveWatermark();
-            window.watermarkInterval = setInterval(moveWatermark, 6000);
+            window.wmInt = setInterval(moveWatermark, 5000);
         }
 
         function moveWatermark() {
             const wm = document.getElementById('watermark-protected');
-            const videoContainer = wm.parentElement;
-            const maxX = videoContainer.clientWidth - wm.clientWidth - 20;
-            const maxY = videoContainer.clientHeight - wm.clientHeight - 20;
-            wm.style.left = Math.max(10, Math.random() * maxX) + 'px';
-            wm.style.top = Math.max(10, Math.random() * maxY) + 'px';
+            const box = wm.parentElement;
+            wm.style.left = Math.random() * (box.clientWidth - 150) + 'px';
+            wm.style.top = Math.random() * (box.clientHeight - 50) + 'px';
         }
 
         function closeVideo() {
             const video = document.getElementById('video-engine');
             video.pause(); video.src = "";
             document.getElementById('player-view').classList.add('hidden');
-            clearInterval(window.watermarkInterval);
+            clearInterval(window.wmInt);
         }
 
-        // 5. وظائف الأدمن (الأدوات)
+        // 5. Admin Logic
         function savePackage() {
             const name = document.getElementById('pkg-name').value;
             const desc = document.getElementById('pkg-desc').value;
-            if (!name || !desc) return alert("املا البيانات يا بطل");
-            
+            if (!name) return;
             db.ref('packages').push({ name, desc, price: 250 }).then(() => {
-                alert("تم إضافة الباقة بنجاح!");
-                toggleModal('package-modal');
-                loadPackages();
+                toggleModal('package-modal'); loadPackages();
+            });
+        }
+
+        function openLectureModal() {
+            const select = document.getElementById('target-pkg');
+            select.innerHTML = '';
+            db.ref('packages').once('value', snap => {
+                snap.forEach(c => { select.innerHTML += `<option value="${c.key}">${c.val().name}</option>`; });
+                toggleModal('lecture-modal');
+            });
+        }
+
+        function saveLecture() {
+            const pkgId = document.getElementById('target-pkg').value;
+            const name = document.getElementById('lec-name').value;
+            const url = document.getElementById('lec-url').value;
+            if (!name || !url) return alert("اكمل البيانات");
+            
+            db.ref(`lectures/${pkgId}`).push({ name, url }).then(() => {
+                alert("تمت الإضافة!"); toggleModal('lecture-modal');
             });
         }
 
         function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
+        function logout() { localStorage.clear(); window.location.href = 'go.html'; }
 
-        // منع التحميل والكليك يمين
         document.addEventListener('contextmenu', e => e.preventDefault());
-        document.onkeydown = (e) => {
-            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74))) return false;
-        }
     </script>
 </body>
 </html>
