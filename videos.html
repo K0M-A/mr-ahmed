@@ -3,75 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة الأستاذ أحمد شعبان | المحاضرات</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>منصة مستر احمد شعبان - النظام الذكي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0f172a',
+                        darker: '#020617',
+                        neonRed: '#ef4444',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root { --primary: #d4af37; --bg: #050505; --text: #e2e8f0; }
-        body { background: var(--bg); color: var(--text); font-family: 'Cairo', sans-serif; margin: 0; padding-bottom: 100px; -webkit-user-select: none; user-select: none; }
-        .container { max-width: 1000px; margin: 100px auto 20px; padding: 0 20px; }
-        
-        #admin-upload-panel { display: none; background: #111; padding: 25px; border-radius: 20px; border: 2px dashed var(--primary); margin-bottom: 40px; }
-        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #1a1a1a; color: #fff; }
-        
-        .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .course-card { background: #111; border-radius: 20px; overflow: hidden; border: 1px solid #222; transition: 0.3s; position: relative; }
-        .course-card:hover { border-color: var(--primary); transform: translateY(-5px); }
-        .course-info { padding: 20px; }
-        .course-price { color: var(--primary); font-weight: 900; font-size: 1.2rem; }
-        
-        #video-player-container { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #000; z-index: 10000; justify-content: center; align-items: center; 
-        }
-        video { width: 90%; max-height: 80vh; border-radius: 15px; box-shadow: 0 0 50px rgba(0,0,0,1); }
-        
-        #watermark {
-            position: absolute; color: rgba(255, 255, 255, 0.15); font-size: 14px;
-            pointer-events: none; z-index: 10001; white-space: nowrap;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5); font-weight: bold;
-        }
-
-        .btn { padding: 12px 25px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-gold { background: var(--primary); color: #000; }
-        .close-video { position: absolute; top: 20px; right: 20px; background: red; color: white; padding: 10px 20px; border-radius: 10px; cursor: pointer; z-index: 10002; }
-
-        header { position: fixed; top: 0; width: 100%; background: rgba(10,10,10,0.9); padding: 15px 5%; display: flex; justify-content: space-between; z-index: 1000; border-bottom: 1px solid #222; }
+        body { -webkit-user-select: none; user-select: none; scrollbar-gutter: stable; background-color: #020617; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #ef4444; border-radius: 10px; }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); }
+        .animate-fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
-<body oncontextmenu="return false;">
+<body class="text-gray-200 font-sans h-screen flex flex-col overflow-hidden">
 
-    <header>
-        <div style="font-weight: 900; color: var(--primary);">🎥 محاضرات المنصة</div>
-        <div id="user-status">جاري التحقق...</div>
-    </header>
+    <nav class="glass border-b border-gray-800 p-4 flex justify-between items-center z-20">
+        <div class="flex items-center gap-3">
+            <div class="bg-neonRed p-2 rounded-lg shadow-lg shadow-neonRed/20">
+                <i class="fa-solid fa-graduation-cap text-darker text-xl"></i>
+            </div>
+            <h1 class="text-xl font-bold">منصة <span class="text-neonRed">أحمد شعبان</span></h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="text-left">
+                <p id="user-display-role" class="text-[10px] text-gray-500 uppercase tracking-widest">جاري الفحص...</p>
+                <p id="user-display-name" class="text-sm font-bold text-white">...</p>
+            </div>
+            <div id="status-dot" class="w-2.5 h-2.5 rounded-full bg-gray-600"></div>
+        </div>
+    </nav>
 
-    <div class="container">
-        <section id="admin-upload-panel">
-            <h2 style="color: var(--primary);">إضافة كورس/محاضرة جديدة</h2>
-            <input type="text" id="course-name" placeholder="اسم الكورس">
-            <textarea id="course-desc" placeholder="وصف الكورس"></textarea>
-            <input type="text" id="video-url" placeholder="رابط الفيديو المباشر">
-            <input type="number" id="course-price" placeholder="سعر الكورس (ج.م)">
-            <button class="btn btn-gold" onclick="uploadCourse()">نشر الكورس</button>
-        </section>
+    <main class="flex-1 overflow-y-auto p-4 lg:p-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">المحتوى الدراسي</h2>
+                    <p class="text-sm text-gray-500 mt-1">أهلاً بك مجدداً، استكمل دروسك الآن</p>
+                </div>
+                <div class="flex gap-2">
+                    <button id="admin-add-btn" class="hidden bg-white text-darker px-5 py-2 rounded-xl font-bold hover:bg-neonRed hover:text-white transition-all">
+                        <i class="fa-solid fa-plus ml-1"></i> إدارة المحتوى
+                    </button>
+                    <button id="logout-btn" class="bg-gray-800 text-gray-400 px-4 py-2 rounded-xl text-xs hover:bg-red-600 hover:text-white transition-all">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
 
-        <h2 id="section-title">الكورسات المتاحة</h2>
-        <div id="course-display" class="course-grid"></div>
-    </div>
+            <div id="dynamic-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+                <div class="col-span-full text-center py-20">
+                    <i class="fa-solid fa-circle-notch animate-spin text-3xl text-neonRed"></i>
+                    <p class="mt-4 text-gray-500">جاري تحميل بياناتك الحقيقية...</p>
+                </div>
+            </div>
+        </div>
+    </main>
 
-    <div id="video-player-container">
-        <div class="close-video" onclick="closeVideo()">إغلاق الفيديو ×</div>
-        <div id="watermark"></div>
-        <video id="protected-video" controlsList="nodownload" oncontextmenu="return false;">
-            <source id="video-source" src="" type="video/mp4">
-        </video>
-    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-
-    <script>
+        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyBfkxj5I7UOEETOf9GRqGgqEaEoqPtPMek",
             authDomain: "mrahmed-925d8.firebaseapp.com",
@@ -81,145 +86,113 @@
             messagingSenderId: "83939909031",
             appId: "1:83939909031:web:adb0b10d41b9df6c602a82"
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
 
-        const userPhone = localStorage.getItem('userLoggedIn');
-        let userData = null;
-        let isAdmin = false;
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-        // --- 1. جلب بيانات المستخدم ---
-        if (!userPhone) {
-            window.location.href = "go.html";
-        } else {
-            db.ref('students/' + userPhone).on('value', (snap) => {
-                userData = snap.val();
-                if (!userData) { window.location.href = "go.html"; return; }
-                
-                // هنا التعديل: لا نقوم بتغيير الحالة للحظر أبداً، فقط نقرأها
-                if (userData.status === "blocked") {
-                    document.body.innerHTML = "<h1 style='color:white; text-align:center; margin-top:100px;'>عذراً، حسابك معطل حالياً. تواصل مع الدعم.</h1>";
+        // 1. منطق الفحص والتحويل
+        function authenticate() {
+            // نحاول جلب البيانات من المفتاحين الأكثر شيوعاً (user أو mrahmed_user)
+            const localData = localStorage.getItem('mrahmed_user') || localStorage.getItem('user');
+            
+            if (!localData) {
+                // المستخدم لم يسجل دخول مطلقاً -> اذهب لصفحة التسجيل
+                window.location.href = 'go.html';
+                return;
+            }
+
+            try {
+                const parsedUser = JSON.parse(localData);
+                const userId = parsedUser.userId || parsedUser.id || parsedParsed.phone;
+
+                if (!userId) throw new Error("No ID found");
+
+                // 2. التحقق من الهوية الحقيقية من السيرفر
+                onValue(ref(db, `users/${userId}`), (snapshot) => {
+                    const cloudData = snapshot.val();
+                    
+                    if (cloudData) {
+                        // البيانات موجودة وصحيحة
+                        renderUI(cloudData);
+                    } else {
+                        // مسجل في المتصفح لكن ليس له وجود في السيرفر (بيانات قديمة أو وهمية)
+                        localStorage.removeItem('mrahmed_user');
+                        window.location.href = 'go.html';
+                    }
+                }, { onlyOnce: true });
+
+            } catch (e) {
+                window.location.href = 'go.html';
+            }
+        }
+
+        // 3. عرض الواجهة بناءً على البيانات الحقيقية
+        function renderUI(user) {
+            document.getElementById('user-display-name').textContent = user.name;
+            document.getElementById('user-display-role').textContent = user.role === 'admin' ? 'إدارة المنصة' : 'حساب طالب';
+            document.getElementById('status-dot').classList.replace('bg-gray-600', 'bg-green-500');
+
+            if (user.role === 'admin') {
+                document.getElementById('admin-add-btn').classList.remove('hidden');
+            }
+
+            if (user.status === 'blocked') {
+                document.body.innerHTML = "<div class='h-screen flex items-center justify-center text-white'><h1>عذراً، تم حظر دخولك للمنصة</h1></div>";
+                return;
+            }
+
+            loadContent();
+        }
+
+        // 4. جلب الباقات المتاحة
+        function loadContent() {
+            onValue(ref(db, 'packages/'), (snapshot) => {
+                const container = document.getElementById('dynamic-container');
+                container.innerHTML = '';
+                const pkgs = snapshot.val();
+
+                if (!pkgs) {
+                    container.innerHTML = "<p class='col-span-full text-center text-gray-600'>لا يوجد محتوى متاح حالياً.</p>";
                     return;
                 }
-                
-                document.getElementById('user-status').innerText = userData.name;
-                
-                if (userData.role === "admin" || userPhone === "01025768529") {
-                    isAdmin = true;
-                    document.getElementById('admin-upload-panel').style.display = 'block';
-                }
-                loadCourses();
-            });
-        }
 
-        // --- 2. وظائف الأدمن ---
-        function uploadCourse() {
-            const name = document.getElementById('course-name').value;
-            const desc = document.getElementById('course-desc').value;
-            const url = document.getElementById('video-url').value;
-            const price = document.getElementById('course-price').value;
-            if(!name || !url || !price) return alert("اكمل البيانات");
-            db.ref('courses').push({ name, desc, url, price: parseInt(price) })
-            .then(() => { alert("تم النشر بنجاح"); location.reload(); });
-        }
-
-        // --- 3. وظائف الطالب ---
-        function loadCourses() {
-            db.ref('courses').on('value', (snap) => {
-                const container = document.getElementById('course-display');
-                container.innerHTML = '';
-                snap.forEach(child => {
-                    const c = child.val();
-                    const key = child.key;
-                    const isBought = (userData.courses && userData.courses[key]) || isAdmin;
-
-                    container.innerHTML += `
-                        <div class="course-card">
-                            <div class="course-info">
-                                <h3>${c.name}</h3>
-                                <p style="font-size:0.8rem; opacity:0.7">${c.desc}</p>
-                                <div class="course-price">${isAdmin ? 'وضع المعلم' : c.price + ' ج.م'}</div>
-                                <button class="btn btn-gold" style="width:100%; margin-top:15px;" 
-                                    onclick="handleCourseAction('${key}', '${c.url}', ${c.price}, ${isBought})">
-                                    ${isBought ? 'مشاهدة الآن' : 'شراء المحاضرة'}
-                                </button>
+                Object.keys(pkgs).forEach(id => {
+                    const pkg = pkgs[id];
+                    const card = document.createElement('div');
+                    card.className = "bg-dark p-6 rounded-2xl border border-gray-800 hover:border-neonRed transition-all cursor-pointer group";
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="bg-gray-800 p-3 rounded-xl group-hover:bg-neonRed transition-colors">
+                                <i class="fa-solid fa-book-open"></i>
                             </div>
+                            <span class="text-[10px] bg-green-500/10 text-green-500 px-2 py-1 rounded">نشط</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">${pkg.name}</h3>
+                        <p class="text-gray-500 text-xs mt-2 line-clamp-2">${pkg.desc || 'لا يوجد وصف'}</p>
+                        <div class="mt-6 flex justify-between items-center border-t border-gray-800 pt-4">
+                            <span class="text-neonRed font-bold text-sm">دخول الباقة</span>
+                            <i class="fa-solid fa-chevron-left text-[10px]"></i>
                         </div>
                     `;
+                    container.appendChild(card);
                 });
             });
         }
 
-        function handleCourseAction(id, url, price, isBought) {
-            if (isBought) {
-                openProtectedVideo(url);
-            } else {
-                if (confirm(`هل تريد شراء هذه المحاضرة بـ ${price} ج.م؟`)) {
-                    const balance = userData.balance || 0;
-                    if (balance >= price) {
-                        db.ref('students/' + userPhone).update({
-                            balance: balance - price,
-                            [`courses/${id}`]: true
-                        }).then(() => alert("تم الشراء بنجاح!"));
-                    } else { alert("عذراً، رصيدك غير كافٍ."); }
-                }
-            }
-        }
-
-        // --- 4. مشغل الفيديو والحماية (بدون حظر) ---
-        function openProtectedVideo(url) {
-            const player = document.getElementById('video-player-container');
-            const video = document.getElementById('protected-video');
-            const source = document.getElementById('video-source');
-            const watermark = document.getElementById('watermark');
-
-            source.src = url;
-            video.load();
-            player.style.display = 'flex';
-            
-            watermark.innerText = `${userData.name} - ${userPhone}`;
-            moveWatermark();
-        }
-
-        function moveWatermark() {
-            const wm = document.getElementById('watermark');
-            const move = () => {
-                wm.style.left = Math.random() * (window.innerWidth - 180) + 'px';
-                wm.style.top = Math.random() * (window.innerHeight - 50) + 'px';
-            };
-            move();
-            setInterval(move, 5000);
-        }
-
-        function closeVideo() {
-            const video = document.getElementById('protected-video');
-            video.pause();
-            document.getElementById('video-player-container').style.display = 'none';
-        }
-
-        // إغلاق الفيديو فقط إذا فتح الأدوات (للطالب فقط)
-        setInterval(() => {
-            if (isAdmin) return;
-            const threshold = 160;
-            const isDevOpen = window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold;
-            if (isDevOpen) {
-                closeVideo();
-                // لا يوجد كود حظر هنا نهائياً
-            }
-        }, 1000);
-
-        // منع الاختصارات (للطالب فقط)
-        document.onkeydown = (e) => {
-            if (isAdmin) return true;
-            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) {
-                return false;
+        // تسجيل الخروج
+        document.getElementById('logout-btn').onclick = () => {
+            if(confirm("هل تريد تسجيل الخروج؟")) {
+                localStorage.removeItem('mrahmed_user');
+                localStorage.removeItem('user');
+                window.location.href = 'go.html';
             }
         };
 
-        // تعتيم الفيديو عند محاولة تسجيل الشاشة/فقدان الفوكس
-        window.onblur = () => { if(!isAdmin) document.getElementById('protected-video').style.filter = "blur(60px)"; };
-        window.onfocus = () => { document.getElementById('protected-video').style.filter = "none"; };
+        // تشغيل الفحص عند التحميل
+        authenticate();
 
+        // حماية إضافية
+        document.addEventListener('contextmenu', e => e.preventDefault());
     </script>
 </body>
 </html>
