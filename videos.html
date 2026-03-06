@@ -3,26 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة الأستاذ أحمد شعبان | المحاضرات</title>
+    <title>لوحة تحكم المحتوى | منصة الأستاذ أحمد شعبان</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-        body { font-family: 'Cairo', sans-serif; background-color: #050505; color: #e2e8f0; user-select: none; -webkit-user-select: none; }
+        body { font-family: 'Cairo', sans-serif; background-color: #050505; color: #e2e8f0; user-select: none; -webkit-user-select: none; overflow-x: hidden; }
         .glass { background: rgba(15, 15, 15, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.1); }
         .gold-text { color: #d4af37; }
         .gold-bg { background: #d4af37; }
         
+        /* مشغل الفيديو المخصص لضمان بقاء العلامة المائية */
+        #custom-player-container {
+            position: relative; width: 100%; max-width: 1000px; aspect-ratio: 16/9;
+            background: #000; border-radius: 20px; overflow: hidden;
+        }
+        
         #watermark-protected {
-            position: absolute; z-index: 999999; pointer-events: none;
-            color: rgba(255, 255, 255, 0.25); font-size: 14px; font-weight: bold;
-            white-space: nowrap; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-            transition: all 0.6s ease-in-out;
+            position: absolute; z-index: 50; pointer-events: none;
+            color: rgba(255, 255, 255, 0.3); font-size: clamp(12px, 2vw, 18px); font-weight: bold;
+            white-space: nowrap; text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+            transition: all 0.8s ease-in-out;
         }
 
-        video::-webkit-media-controls-download-button { display:none; }
+        /* منع التحميل */
+        video::-internal-media-controls-download-button { display:none; }
         video::-webkit-media-controls-enclosure { overflow:hidden; }
+        video::-webkit-media-controls-panel { width: calc(100% + 30px); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -32,21 +40,19 @@
             <a href="index.html" class="gold-text text-xl"><i class="fa-solid fa-house"></i></a>
             <h1 class="text-lg font-black italic">أحمد <span class="gold-text">شعبان</span></h1>
         </div>
-        <div class="flex items-center gap-4 text-left">
-            <div class="border-r border-white/10 pr-4 hidden md:block">
+        <div class="flex items-center gap-4">
+            <div class="text-left border-r border-white/10 pr-4 hidden md:block">
                 <p id="user-name" class="text-sm font-bold italic">...</p>
                 <p id="user-role-display" class="text-[10px] gold-text opacity-70 italic font-bold uppercase"></p>
             </div>
+            <button onclick="logout()" class="text-red-500 text-xs font-bold mr-2"><i class="fas fa-sign-out-alt"></i> خروج</button>
         </div>
     </nav>
 
     <div id="admin-panel" class="hidden bg-white/5 border-b border-gold-text/20 p-6">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="gold-text font-black mb-4"><i class="fas fa-user-shield ml-2"></i> لوحة التحكم</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button onclick="toggleModal('package-modal')" class="bg-gold-text text-black p-3 rounded-xl font-bold hover:scale-105 transition">إضافة باقة جديدة</button>
-                <button onclick="openLectureModal()" class="bg-blue-600 text-white p-3 rounded-xl font-bold hover:scale-105 transition">إضافة محاضرة جديدة</button>
-            </div>
+        <div class="max-w-6xl mx-auto flex flex-wrap gap-4 justify-center">
+            <button onclick="openPkgModal()" class="bg-gold-text text-black px-6 py-3 rounded-xl font-bold hover:scale-105 transition shadow-lg shadow-gold-text/20">إضافة باقة جديدة</button>
+            <button onclick="openLecModal()" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:scale-105 transition shadow-lg shadow-blue-600/20">إضافة محاضرة جديدة</button>
         </div>
     </div>
 
@@ -54,8 +60,8 @@
         <div class="max-w-6xl mx-auto">
             <div class="flex justify-between items-end mb-8">
                 <div>
-                    <h2 id="view-title" class="text-3xl font-black text-white italic">الباقات المتاحة</h2>
-                    <p class="text-gray-500 text-sm mt-2">اختر الباقة لمتابعة دروسك</p>
+                    <h2 id="view-title" class="text-3xl font-black text-white italic">الباقات الدراسية</h2>
+                    <p class="text-gray-500 text-sm mt-2">تحكم كامل في المحتوى التعليمي</p>
                 </div>
                 <button id="back-to-pkgs" class="hidden text-gold-text font-bold" onclick="loadPackages()">
                     <i class="fas fa-arrow-right ml-2"></i> العودة للباقات
@@ -66,35 +72,44 @@
         </div>
     </main>
 
-    <section id="player-view" class="hidden fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-5xl relative aspect-video bg-black rounded-2xl overflow-hidden group">
+    <section id="player-view" class="hidden fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-center p-4">
+        <div id="custom-player-container">
             <div id="watermark-protected"></div>
-            <video id="video-engine" class="w-full h-full" controls controlsList="nodownload"></video>
-            <button onclick="closeVideo()" class="absolute top-5 right-5 z-[210] bg-red-600 text-white w-10 h-10 rounded-full opacity-0 group-hover:opacity-100 transition">
+            <video id="video-engine" class="w-full h-full" controlsList="nodownload" playsinline></video>
+            <button onclick="closeVideo()" class="absolute top-4 right-4 z-[210] bg-red-600 text-white w-10 h-10 rounded-full flex items-center justify-center hover:rotate-90 transition duration-300">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <h3 id="playing-title" class="mt-6 text-xl font-black gold-text italic"></h3>
     </section>
 
-    <div id="package-modal" class="hidden fixed inset-0 z-[300] bg-black/95 flex items-center justify-center p-4">
-        <div class="glass w-full max-w-md p-8 rounded-3xl">
-            <h3 class="gold-text text-xl font-black mb-6">إنشاء باقة دراسية</h3>
-            <input id="pkg-name" type="text" placeholder="اسم الباقة" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-4 focus:outline-none focus:border-gold-text">
-            <textarea id="pkg-desc" placeholder="وصف الباقة" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-6"></textarea>
-            <button onclick="savePackage()" class="w-full gold-bg text-black font-black p-4 rounded-xl">حفظ الباقة</button>
-            <button onclick="toggleModal('package-modal')" class="w-full text-gray-500 mt-4">إلغاء</button>
+    <div id="pkg-modal" class="hidden fixed inset-0 z-[300] bg-black/95 flex items-center justify-center p-4">
+        <div class="glass w-full max-w-md p-8 rounded-3xl border-gold-text/30">
+            <h3 id="pkg-modal-title" class="gold-text text-xl font-black mb-6">إعدادات الباقة</h3>
+            <input id="pkg-id" type="hidden">
+            <input id="pkg-name" type="text" placeholder="اسم الباقة" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-4 text-white focus:border-gold-text outline-none">
+            <textarea id="pkg-desc" placeholder="وصف الباقة" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-4 text-white focus:border-gold-text outline-none"></textarea>
+            <input id="pkg-price" type="number" placeholder="سعر الباقة" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-6 text-white outline-none">
+            <div class="flex gap-2">
+                <button onclick="savePackage()" class="flex-1 gold-bg text-black font-black p-4 rounded-xl">حفظ</button>
+                <button id="pkg-del-btn" onclick="deletePackage()" class="hidden bg-red-600 text-white font-black p-4 rounded-xl"><i class="fas fa-trash"></i></button>
+            </div>
+            <button onclick="toggleModal('pkg-modal')" class="w-full text-gray-500 mt-4">إلغاء</button>
         </div>
     </div>
 
-    <div id="lecture-modal" class="hidden fixed inset-0 z-[300] bg-black/95 flex items-center justify-center p-4">
-        <div class="glass w-full max-w-md p-8 rounded-3xl">
-            <h3 class="gold-text text-xl font-black mb-6">إضافة محاضرة جديدة</h3>
+    <div id="lec-modal" class="hidden fixed inset-0 z-[300] bg-black/95 flex items-center justify-center p-4">
+        <div class="glass w-full max-w-md p-8 rounded-3xl border-blue-600/30">
+            <h3 id="lec-modal-title" class="text-blue-500 text-xl font-black mb-6">إعدادات المحاضرة</h3>
+            <input id="lec-id" type="hidden">
             <select id="target-pkg" class="w-full bg-black border border-white/10 p-4 rounded-xl mb-4 text-white"></select>
-            <input id="lec-name" type="text" placeholder="اسم المحاضرة" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-4">
-            <input id="lec-url" type="text" placeholder="رابط الفيديو (Direct or M3U8)" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-6">
-            <button onclick="saveLecture()" class="w-full bg-blue-600 text-white font-black p-4 rounded-xl">حفظ المحاضرة</button>
-            <button onclick="toggleModal('lecture-modal')" class="w-full text-gray-500 mt-4">إلغاء</button>
+            <input id="lec-name" type="text" placeholder="اسم المحاضرة" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-4 text-white outline-none">
+            <input id="lec-url" type="text" placeholder="رابط الفيديو" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-6 text-white outline-none">
+            <div class="flex gap-2">
+                <button onclick="saveLecture()" class="flex-1 bg-blue-600 text-white font-black p-4 rounded-xl">حفظ</button>
+                <button id="lec-del-btn" onclick="deleteLecture()" class="hidden bg-red-600 text-white font-black p-4 rounded-xl"><i class="fas fa-trash"></i></button>
+            </div>
+            <button onclick="toggleModal('lec-modal')" class="w-full text-gray-500 mt-4">إلغاء</button>
         </div>
     </div>
 
@@ -116,43 +131,47 @@
         const db = firebase.database();
         const userPhone = localStorage.getItem('userLoggedIn');
         let currentUser = null;
+        let currentOpenPkgId = null;
 
         if (!userPhone) window.location.href = 'go.html';
 
-        // 1. Auth Check
+        // 1. Auth & Role Management
         db.ref('students/' + userPhone).on('value', (snap) => {
             currentUser = snap.val();
             if (!currentUser || currentUser.status === 'blocked') { logout(); return; }
             
             document.getElementById('user-name').innerText = currentUser.name;
-            document.getElementById('user-role-display').innerText = currentUser.role === 'admin' ? 'مدير المنصة' : 'طالب';
+            document.getElementById('user-role-display').innerText = currentUser.role === 'admin' ? 'المدير العام' : 'طالب';
             document.getElementById('watermark-protected').innerText = `${currentUser.name} | ${userPhone}`;
             
             if (currentUser.role === 'admin') document.getElementById('admin-panel').classList.remove('hidden');
             loadPackages();
         });
 
-        // 2. Load Packages
+        // 2. Package Functions (Load, Create, Edit, Delete)
         function loadPackages() {
+            currentOpenPkgId = null;
             document.getElementById('back-to-pkgs').classList.add('hidden');
-            document.getElementById('view-title').innerText = "الباقات المتاحة";
+            document.getElementById('view-title').innerText = "الباقات الدراسية";
             const grid = document.getElementById('dynamic-grid');
-            grid.innerHTML = '<p class="col-span-full text-center gold-text">جاري التحميل...</p>';
+            grid.innerHTML = '<p class="col-span-full text-center gold-text animate-pulse">جاري تحميل الباقات...</p>';
 
-            db.ref('packages').once('value', (snap) => {
+            db.ref('packages').on('value', (snap) => {
+                if(currentOpenPkgId) return; // منع التداخل عند تصفح محاضرات
                 grid.innerHTML = '';
-                if (!snap.exists()) { grid.innerHTML = '<p class="col-span-full text-center">لا توجد باقات.</p>'; return; }
+                if (!snap.exists()) { grid.innerHTML = '<p class="col-span-full text-center">لا توجد باقات متاحة.</p>'; return; }
                 
                 snap.forEach((child) => {
                     const pkg = child.val();
                     const div = document.createElement('div');
-                    div.className = "glass p-8 rounded-3xl border border-white/5 hover:border-gold-text transition-all cursor-pointer group";
+                    div.className = "glass p-8 rounded-3xl border border-white/5 hover:border-gold-text transition-all cursor-pointer relative group";
                     div.innerHTML = `
-                        <h3 class="text-2xl font-black mb-3 italic">${pkg.name}</h3>
-                        <p class="text-gray-500 text-sm mb-6">${pkg.desc}</p>
-                        <div class="flex justify-between items-center border-t border-white/10 pt-4">
-                            <span class="gold-text font-black">250 ج.م</span>
-                            <span class="text-xs opacity-50 italic">اضغط للعرض</span>
+                        ${currentUser.role === 'admin' ? `<button onclick="event.stopPropagation(); editPkg('${child.key}', '${pkg.name}', '${pkg.desc}', '${pkg.price}')" class="absolute top-4 left-4 text-gray-500 hover:text-gold-text"><i class="fas fa-edit"></i></button>` : ''}
+                        <h3 class="text-2xl font-black mb-2 italic">${pkg.name}</h3>
+                        <p class="text-gray-500 text-sm mb-6 line-clamp-2">${pkg.desc}</p>
+                        <div class="flex justify-between items-center border-t border-white/5 pt-4">
+                            <span class="gold-text font-black">${pkg.price} ج.م</span>
+                            <i class="fas fa-play-circle text-2xl opacity-20 group-hover:opacity-100 transition"></i>
                         </div>
                     `;
                     div.onclick = () => loadLectures(child.key, pkg.name);
@@ -161,40 +180,131 @@
             });
         }
 
-        // 3. Load Lectures & Show "Exam" Button
+        function openPkgModal() {
+            document.getElementById('pkg-id').value = '';
+            document.getElementById('pkg-name').value = '';
+            document.getElementById('pkg-desc').value = '';
+            document.getElementById('pkg-price').value = '250';
+            document.getElementById('pkg-del-btn').classList.add('hidden');
+            toggleModal('pkg-modal');
+        }
+
+        function editPkg(id, name, desc, price) {
+            document.getElementById('pkg-id').value = id;
+            document.getElementById('pkg-name').value = name;
+            document.getElementById('pkg-desc').value = desc;
+            document.getElementById('pkg-price').value = price;
+            document.getElementById('pkg-del-btn').classList.remove('hidden');
+            toggleModal('pkg-modal');
+        }
+
+        function savePackage() {
+            const id = document.getElementById('pkg-id').value;
+            const data = {
+                name: document.getElementById('pkg-name').value,
+                desc: document.getElementById('pkg-desc').value,
+                price: document.getElementById('pkg-price').value
+            };
+            if (!data.name) return;
+            const ref = id ? db.ref('packages/' + id) : db.ref('packages').push();
+            ref.set(data).then(() => { toggleModal('pkg-modal'); });
+        }
+
+        function deletePackage() {
+            if (confirm('هل أنت متأكد من حذف الباقة وجميع محاضراتها؟')) {
+                const id = document.getElementById('pkg-id').value;
+                db.ref('packages/' + id).remove();
+                db.ref('lectures/' + id).remove();
+                toggleModal('pkg-modal');
+            }
+        }
+
+        // 3. Lecture Functions (Load, Create, Edit, Delete)
         function loadLectures(pkgId, pkgName) {
+            currentOpenPkgId = pkgId;
             document.getElementById('back-to-pkgs').classList.remove('hidden');
             document.getElementById('view-title').innerText = pkgName;
             const grid = document.getElementById('dynamic-grid');
-            grid.innerHTML = '';
+            grid.innerHTML = '<p class="col-span-full text-center text-blue-500">جاري تحميل المحاضرات...</p>';
 
-            db.ref(`lectures/${pkgId}`).once('value', (snap) => {
-                if (!snap.exists()) { grid.innerHTML = '<p class="col-span-full text-center">لا توجد محاضرات هنا.</p>'; return; }
+            db.ref(`lectures/${pkgId}`).on('value', (snap) => {
+                grid.innerHTML = '';
+                if (!snap.exists()) { grid.innerHTML = '<p class="col-span-full text-center opacity-50">لا توجد محاضرات في هذه الباقة.</p>'; return; }
                 
                 snap.forEach((child) => {
                     const lec = child.val();
                     const div = document.createElement('div');
-                    div.className = "glass p-5 rounded-2xl flex flex-col gap-4 border border-white/5";
+                    div.className = "glass p-5 rounded-2xl border border-white/5 flex flex-col gap-4 group";
                     div.innerHTML = `
-                        <div class="flex items-center gap-4 cursor-pointer" onclick="startLearning('${lec.url}', '${lec.name}')">
+                        <div class="flex items-center gap-4">
                             <div class="w-12 h-12 gold-bg rounded-lg flex items-center justify-center text-black font-black">LEC</div>
                             <div class="flex-1">
-                                <h4 class="font-bold">${lec.name}</h4>
-                                <p class="text-[10px] text-gray-500 uppercase">اضغط للمشاهدة</p>
+                                <h4 class="font-bold text-white">${lec.name}</h4>
+                                <p class="text-[10px] text-gray-500">محاضرة تعليمية</p>
                             </div>
+                            ${currentUser.role === 'admin' ? `<button onclick="editLec('${pkgId}', '${child.key}', '${lec.name}', '${lec.url}')" class="text-blue-500"><i class="fas fa-cog"></i></button>` : ''}
                         </div>
-                        <button onclick="window.location.href='exams.html'" class="w-full bg-white/5 border border-gold-text/30 text-gold-text py-2 rounded-xl text-xs font-bold hover:bg-gold-text hover:text-black transition">
-                            <i class="fas fa-edit ml-2"></i> دخول الامتحان الخاص بالمحاضرة
-                        </button>
+                        <div class="grid grid-cols-2 gap-2">
+                             <button onclick="startLearning('${lec.url}', '${lec.name}')" class="bg-white/5 hover:bg-gold-text hover:text-black py-2 rounded-xl text-xs font-bold transition">مشاهدة</button>
+                             <button onclick="window.location.href='exams.html'" class="bg-white/5 hover:bg-blue-600 py-2 rounded-xl text-xs font-bold transition">الامتحان</button>
+                        </div>
                     `;
                     grid.appendChild(div);
                 });
             });
         }
 
-        // 4. Video System
+        function openLecModal() {
+            document.getElementById('lec-id').value = '';
+            document.getElementById('lec-name').value = '';
+            document.getElementById('lec-url').value = '';
+            document.getElementById('lec-del-btn').classList.add('hidden');
+            
+            const select = document.getElementById('target-pkg');
+            select.innerHTML = '';
+            db.ref('packages').once('value', snap => {
+                snap.forEach(c => { select.innerHTML += `<option value="${c.key}">${c.val().name}</option>`; });
+                if(currentOpenPkgId) select.value = currentOpenPkgId;
+                toggleModal('lec-modal');
+            });
+        }
+
+        function editLec(pkgId, lecId, name, url) {
+            document.getElementById('lec-id').value = lecId;
+            document.getElementById('lec-name').value = name;
+            document.getElementById('lec-url').value = url;
+            document.getElementById('lec-del-btn').classList.remove('hidden');
+            
+            const select = document.getElementById('target-pkg');
+            select.innerHTML = `<option value="${pkgId}">${pkgId}</option>`;
+            select.disabled = true;
+            toggleModal('lec-modal');
+        }
+
+        function saveLecture() {
+            const pkgId = document.getElementById('target-pkg').value;
+            const lecId = document.getElementById('lec-id').value;
+            const data = {
+                name: document.getElementById('lec-name').value,
+                url: document.getElementById('lec-url').value
+            };
+            if (!data.name || !data.url) return;
+            const ref = lecId ? db.ref(`lectures/${pkgId}/${lecId}`) : db.ref(`lectures/${pkgId}`).push();
+            ref.set(data).then(() => { toggleModal('lec-modal'); document.getElementById('target-pkg').disabled = false; });
+        }
+
+        function deleteLecture() {
+            if (confirm('حذف هذه المحاضرة نهائياً؟')) {
+                const pkgId = document.getElementById('target-pkg').value;
+                const lecId = document.getElementById('lec-id').value;
+                db.ref(`lectures/${pkgId}/${lecId}`).remove();
+                toggleModal('lec-modal');
+                document.getElementById('target-pkg').disabled = false;
+            }
+        }
+
+        // 4. Video & Watermark System (Full Screen Safe)
         function startLearning(url, title) {
-            if (!url) return alert("الرابط غير صالح");
             const player = document.getElementById('player-view');
             const video = document.getElementById('video-engine');
             document.getElementById('playing-title').innerText = title;
@@ -203,64 +313,36 @@
             if (Hls.isSupported() && url.includes('.m3u8')) {
                 const hls = new Hls(); hls.loadSource(url); hls.attachMedia(video);
             } else { video.src = url; }
+            
             video.play();
-
-            db.ref(`admin/watch_logs/${userPhone}`).push({
-                name: currentUser.name, video: title, time: new Date().toLocaleString()
-            });
+            db.ref(`admin/watch_logs/${userPhone}`).push({ name: currentUser.name, video: title, time: new Date().toLocaleString() });
 
             moveWatermark();
-            window.wmInt = setInterval(moveWatermark, 5000);
+            window.wmInterval = setInterval(moveWatermark, 4000);
         }
 
         function moveWatermark() {
             const wm = document.getElementById('watermark-protected');
-            const box = wm.parentElement;
-            wm.style.left = Math.random() * (box.clientWidth - 150) + 'px';
-            wm.style.top = Math.random() * (box.clientHeight - 50) + 'px';
+            const container = document.getElementById('custom-player-container');
+            const maxX = container.clientWidth - wm.clientWidth - 20;
+            const maxY = container.clientHeight - wm.clientHeight - 20;
+            wm.style.left = Math.max(10, Math.random() * maxX) + 'px';
+            wm.style.top = Math.max(10, Math.random() * maxY) + 'px';
         }
 
         function closeVideo() {
             const video = document.getElementById('video-engine');
             video.pause(); video.src = "";
             document.getElementById('player-view').classList.add('hidden');
-            clearInterval(window.wmInt);
-        }
-
-        // 5. Admin Logic
-        function savePackage() {
-            const name = document.getElementById('pkg-name').value;
-            const desc = document.getElementById('pkg-desc').value;
-            if (!name) return;
-            db.ref('packages').push({ name, desc, price: 250 }).then(() => {
-                toggleModal('package-modal'); loadPackages();
-            });
-        }
-
-        function openLectureModal() {
-            const select = document.getElementById('target-pkg');
-            select.innerHTML = '';
-            db.ref('packages').once('value', snap => {
-                snap.forEach(c => { select.innerHTML += `<option value="${c.key}">${c.val().name}</option>`; });
-                toggleModal('lecture-modal');
-            });
-        }
-
-        function saveLecture() {
-            const pkgId = document.getElementById('target-pkg').value;
-            const name = document.getElementById('lec-name').value;
-            const url = document.getElementById('lec-url').value;
-            if (!name || !url) return alert("اكمل البيانات");
-            
-            db.ref(`lectures/${pkgId}`).push({ name, url }).then(() => {
-                alert("تمت الإضافة!"); toggleModal('lecture-modal');
-            });
+            clearInterval(window.wmInterval);
         }
 
         function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
         function logout() { localStorage.clear(); window.location.href = 'go.html'; }
 
+        // أمان إضافي
         document.addEventListener('contextmenu', e => e.preventDefault());
+        document.onkeydown = (e) => { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false; };
     </script>
 </body>
 </html>
