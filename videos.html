@@ -174,7 +174,15 @@
                             <i class="fas fa-play-circle text-2xl opacity-20 group-hover:opacity-100 transition"></i>
                         </div>
                     `;
-                    div.onclick = () => loadLectures(child.key, pkg.name);
+                    div.onclick = () => {
+                        // التحقق من الشراء للأدمن أو إذا كانت الباقة مجانية أو مشتراة فعلياً
+                        const isPurchased = currentUser.purchasedPackages && currentUser.purchasedPackages[child.key];
+                        if (currentUser.role === 'admin' || isPurchased || pkg.price == 0) {
+                            loadLectures(child.key, pkg.name);
+                        } else {
+                            alert('يجب الاشتراك في هذه الباقة أولاً للوصول للمحاضرات.');
+                        }
+                    };
                     grid.appendChild(div);
                 });
             });
@@ -338,7 +346,12 @@
         }
 
         function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
-        function logout() { localStorage.clear(); window.location.href = 'go.html'; }
+        
+        function logout() { 
+            // حذف رقم الهاتف المخزن فقط للعودة لصفحة الدخول دون حذف الحساب من السيرفر
+            localStorage.removeItem('userLoggedIn'); 
+            window.location.href = 'go.html'; 
+        }
 
         // أمان إضافي
         document.addEventListener('contextmenu', e => e.preventDefault());
