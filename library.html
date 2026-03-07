@@ -9,79 +9,97 @@
     <style>
         :root {
             --primary: #d4af37; --bg: #050505; --card-bg: rgba(255, 255, 255, 0.03); 
-            --text: #e2e8f0; --gold: #d4af37;
+            --text: #e2e8f0; --gold: #d4af37; --danger: #ff4d4d;
         }
-        body { background: var(--bg); color: var(--text); font-family: 'Cairo', sans-serif; margin: 0; padding-bottom: 100px; }
+        body { background: var(--bg); color: var(--text); font-family: 'Cairo', sans-serif; margin: 0; padding-bottom: 50px; overflow-x: hidden; }
         
-        .container { padding: 20px; max-width: 1200px; margin: 80px auto 0; }
-        h1 { text-align: center; color: var(--primary); margin-bottom: 30px; font-weight: 900; }
+        .container { padding: 20px; max-width: 1200px; margin: 40px auto; }
+        h1 { text-align: center; color: var(--primary); font-weight: 900; font-size: 2rem; margin-bottom: 40px; text-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }
 
-        /* تنسيق لوحة الأدمن للرفع */
+        /* لوحة الرفع */
         #admin-upload-section {
-            background: rgba(212, 175, 55, 0.05); border: 2px dashed var(--primary);
-            padding: 20px; border-radius: 20px; margin-bottom: 40px; display: none;
+            background: rgba(212, 175, 55, 0.03); border: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 30px; border-radius: 25px; margin-bottom: 50px; display: none;
+            backdrop-filter: blur(10px);
         }
-        .form-group { margin-bottom: 15px; }
-        input, textarea, select {
-            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #333;
-            background: #111; color: white; margin-top: 5px;
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full-width { grid-column: span 2; }
+        input, textarea {
+            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #222;
+            background: #0a0a0a; color: white; outline: none; transition: 0.3s;
         }
-        .btn-upload {
-            background: var(--primary); color: #000; border: none; padding: 12px 25px;
-            border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px;
-        }
-
-        /* تنسيق عرض المذكرات */
-        .library-grid { display: grid; grid-template-columns: repeat(auto-fill, min-minmax(300px, 1fr)); gap: 20px; }
-        .book-card {
-            background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);
-            padding: 20px; border-radius: 20px; position: relative; overflow: hidden;
-            transition: 0.3s;
-        }
-        .book-card:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .book-price {
-            position: absolute; top: 15px; left: 15px; background: var(--primary);
-            color: #000; padding: 2px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;
-        }
-        .book-title { font-size: 1.2rem; font-weight: bold; margin: 15px 0 10px; color: var(--primary); }
-        .book-desc { font-size: 0.9rem; opacity: 0.7; line-height: 1.6; margin-bottom: 20px; height: 50px; overflow: hidden; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(212, 175, 55, 0.1); }
         
-        .btn-action {
-            display: block; text-align: center; padding: 10px; border-radius: 10px;
-            text-decoration: none; font-weight: bold; transition: 0.3s; cursor: pointer;
-        }
-        .buy-btn { background: #222; color: var(--primary); border: 1px solid var(--primary); }
-        .download-btn { background: var(--primary); color: #000; }
+        .upload-progress-container { width: 100%; background: #111; height: 8px; border-radius: 10px; margin: 15px 0; display: none; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: 0.3s; }
 
-        /* نافذة الـ Modal */
-        .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 2000;
+        .btn-upload {
+            background: var(--primary); color: #000; border: none; padding: 15px;
+            border-radius: 12px; font-weight: 900; cursor: pointer; width: 100%;
+            transition: 0.3s; font-size: 1rem;
         }
-        .modal-content { background: #111; padding: 30px; border-radius: 20px; text-align: center; width: 90%; max-width: 400px; }
+        .btn-upload:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3); }
+
+        /* الشبكة والكروت */
+        .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+        .book-card {
+            background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05);
+            padding: 25px; border-radius: 25px; position: relative; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .book-card:hover { transform: translateY(-10px); border-color: var(--primary); background: rgba(255,255,255,0.05); }
+        
+        .book-price {
+            position: absolute; top: 20px; left: 20px; background: var(--primary);
+            color: #000; padding: 4px 15px; border-radius: 12px; font-size: 0.85rem; font-weight: 900;
+        }
+        .book-title { font-size: 1.3rem; font-weight: 900; margin: 25px 0 10px; color: #fff; }
+        .book-desc { font-size: 0.95rem; opacity: 0.6; line-height: 1.6; margin-bottom: 25px; min-height: 45px; }
+        
+        .actions-flex { display: flex; gap: 10px; }
+        .btn-action {
+            flex: 1; text-align: center; padding: 12px; border-radius: 12px;
+            text-decoration: none; font-weight: 800; transition: 0.3s; cursor: pointer; font-size: 0.9rem;
+        }
+        .buy-btn { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+        .buy-btn:hover { background: var(--primary); color: #000; }
+        .download-btn { background: var(--primary); color: #000; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2); }
+
+        /* أزرار الإدارة */
+        .admin-controls { position: absolute; top: 20px; right: 20px; display: none; gap: 8px; }
+        .admin-btn { width: 35px; height: 35px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; transition: 0.3s; }
+        .edit-btn { background: #222; color: var(--gold); }
+        .del-btn { background: #222; color: var(--danger); }
+        .admin-btn:hover { transform: scale(1.1); }
+
+        /* Modal */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(5px);
+        }
+        .modal-content { background: #111; padding: 40px; border-radius: 30px; text-align: center; width: 90%; max-width: 450px; border: 1px solid #333; }
+        
+        .loader { width: 40px; height: 40px; border: 4px solid var(--primary); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1><i class="fas fa-book-open"></i> المكتبة الرقمية الذهبية</h1>
+        <h1><i class="fas fa-scroll"></i> المكتبة الرقمية الذهبية</h1>
 
         <section id="admin-upload-section">
-            <h3 style="margin-bottom: 15px;"><i class="fas fa-plus-circle"></i> إضافة مذكرة جديدة</h3>
-            <div class="form-group">
-                <input type="text" id="book-name" placeholder="اسم المذكرة (مثال: فلسفة البيئة - ملخص)">
-            </div>
-            <div class="form-group">
-                <textarea id="book-desc" rows="2" placeholder="وصف قصير للمذكرة..."></textarea>
-            </div>
-            <div class="form-group">
-                <input type="number" id="book-price" placeholder="سعر المذكرة (ضع 0 لتكون مجانية)">
-            </div>
-            <div class="form-group">
-                <label style="font-size: 0.8rem;">اختر ملف المذكرة (PDF):</label>
+            <h3 style="margin-bottom: 20px; color: var(--primary);"><i class="fas fa-plus-circle"></i> إضافة إصدار جديد للمكتبة</h3>
+            <div class="form-grid">
+                <input type="hidden" id="edit-id">
+                <div class="full-width"><input type="text" id="book-name" placeholder="اسم المذكرة أو الكتاب"></div>
+                <div class="full-width"><textarea id="book-desc" rows="2" placeholder="اكتب وصفاً مختصراً يشجع الطالب..."></textarea></div>
+                <input type="number" id="book-price" placeholder="السعر (0 = مجاني)">
                 <input type="file" id="book-file" accept=".pdf">
             </div>
-            <button class="btn-upload" onclick="uploadBook()">نشر المذكرة للطلاب</button>
+            <div class="upload-progress-container" id="prog-cont">
+                <div class="progress-bar" id="prog-bar"></div>
+            </div>
+            <button class="btn-upload" id="upload-btn" onclick="uploadBook()">نشر في المكتبة</button>
         </section>
 
         <div class="library-grid" id="library-container">
@@ -90,10 +108,12 @@
 
     <div id="buy-modal" class="modal">
         <div class="modal-content">
-            <h3 id="modal-title">تأكيد الشراء</h3>
-            <p id="modal-price" style="margin: 15px 0; color: var(--primary);"></p>
-            <button class="btn-upload" id="confirm-buy-btn">تأكيد خصم الرصيد</button>
-            <button onclick="closeModal()" style="background:transparent; color:white; border:none; margin-top:10px; cursor:pointer;">إلغاء</button>
+            <div id="modal-icon" style="font-size: 3rem; color: var(--gold); margin-bottom: 15px;"><i class="fas fa-wallet"></i></div>
+            <h3 id="modal-title">تأكيد عملية الشراء</h3>
+            <p id="modal-price" style="margin: 15px 0; font-size: 1.2rem; font-weight: bold;"></p>
+            <p style="opacity: 0.6; font-size: 0.8rem;">سيتم خصم المبلغ من رصيدك الحالي فوراً</p>
+            <button class="btn-upload" id="confirm-buy-btn" style="margin-top: 20px;">تأكيد وفتح الملف</button>
+            <button onclick="closeModal()" style="background:transparent; color:#666; border:none; margin-top:20px; cursor:pointer; font-weight:bold;">تراجع</button>
         </div>
     </div>
 
@@ -101,7 +121,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <script>
-        // إعدادات Firebase (نفس التي استخدمتها)
         const firebaseConfig = {
             apiKey: "AIzaSyBfkxj5I7UOEETOf9GRqGgqEaEoqPtPMek",
             authDomain: "mrahmed-925d8.firebaseapp.com",
@@ -118,7 +137,7 @@
         let userRole = "student";
         let userBalance = 0;
 
-        // التحقق من هوية المستخدم وصلاحياته
+        // 1. فحص الصلاحيات بسرعة
         db.ref('students/' + userPhone).on('value', (snap) => {
             const data = snap.val();
             if(data) {
@@ -126,11 +145,12 @@
                 userBalance = data.balance || 0;
                 if(userRole === "admin" || userPhone === "01025768529") {
                     document.getElementById('admin-upload-section').style.display = 'block';
+                    document.querySelectorAll('.admin-controls').forEach(el => el.style.display = 'flex');
                 }
             }
         });
 
-        // تحويل الملف لنص Base64 (كما طلبت ليخزن في الداتابيز مباشرة)
+        // 2. معالجة الملفات (Base64)
         function toBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -140,83 +160,123 @@
             });
         }
 
-        // دالة الرفع (للأستاذ)
+        // 3. دالة الرفع المطورة
         async function uploadBook() {
+            const id = document.getElementById('edit-id').value || Date.now();
             const name = document.getElementById('book-name').value;
             const desc = document.getElementById('book-desc').value;
-            const price = parseInt(document.getElementById('book-price').value);
+            const price = parseInt(document.getElementById('book-price').value) || 0;
             const fileInput = document.getElementById('book-file');
+            const btn = document.getElementById('upload-btn');
+            const progCont = document.getElementById('prog-cont');
+            const progBar = document.getElementById('prog-bar');
 
-            if(!name || !fileInput.files[0]) { alert("أكمل البيانات واختر ملفاً!"); return; }
+            if(!name || (!fileInput.files[0] && !document.getElementById('edit-id').value)) {
+                alert("برجاء ملء جميع البيانات واختيار ملف PDF");
+                return;
+            }
 
-            const fileBase64 = await toBase64(fileInput.files[0]);
-            const bookId = Date.now();
+            btn.disabled = true;
+            btn.innerText = "جاري المعالجة...";
+            progCont.style.display = 'block';
+            progBar.style.width = '30%';
 
-            db.ref('library/' + bookId).set({
-                id: bookId,
-                name: name,
-                desc: desc,
-                price: price,
-                file: fileBase64 // المذكرة هنا مخزنة كـ String طويل
-            }).then(() => {
-                alert("تم نشر المذكرة بنجاح!");
-                location.reload();
+            let bookData = { id, name, desc, price };
+            
+            if(fileInput.files[0]) {
+                progBar.style.width = '60%';
+                bookData.file = await toBase64(fileInput.files[0]);
+            }
+
+            progBar.style.width = '90%';
+            db.ref('library/' + id).update(bookData).then(() => {
+                progBar.style.width = '100%';
+                setTimeout(() => {
+                    alert("تم الحفظ بنجاح!");
+                    location.reload();
+                }, 300);
             });
         }
 
-        // جلب المذكرات وعرضها
+        // 4. عرض البيانات بسلاسة
         db.ref('library').on('value', (snapshot) => {
             const container = document.getElementById('library-container');
             container.innerHTML = '';
             const books = snapshot.val();
+            if(!books) { container.innerHTML = "<p style='text-align:center; opacity:0.5; grid-column:span 3;'>المكتبة فارغة حالياً...</p>"; return; }
 
             for (let id in books) {
                 const book = books[id];
-                checkAccess(book);
+                db.ref('students/' + userPhone + '/purchasedBooks/' + book.id).once('value', (snap) => {
+                    const hasAccess = snap.exists() || book.price === 0 || userRole === "admin";
+                    renderCard(book, hasAccess);
+                });
             }
         });
 
-        function checkAccess(book) {
-            // نتحقق إذا كان الطالب قد اشترى المذكرة مسبقاً
-            db.ref('students/' + userPhone + '/purchasedBooks/' + book.id).once('value', (snap) => {
-                const hasAccess = snap.exists() || book.price === 0 || userRole === "admin";
-                renderBookCard(book, hasAccess);
-            });
-        }
-
-        function renderBookCard(book, hasAccess) {
+        function renderCard(book, hasAccess) {
             const container = document.getElementById('library-container');
             const card = document.createElement('div');
             card.className = 'book-card';
-            
             card.innerHTML = `
-                <div class="book-price">${book.price === 0 ? 'مجانية' : book.price + ' ج.م'}</div>
+                <div class="admin-controls" style="${userRole === 'admin' ? 'display:flex' : ''}">
+                    <button class="admin-btn edit-btn" onclick="editBook('${book.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="admin-btn del-btn" onclick="deleteBook('${book.id}')"><i class="fas fa-trash"></i></button>
+                </div>
+                <div class="book-price">${book.price === 0 ? 'إصدار مجاني' : book.price + ' ج.م'}</div>
                 <div class="book-title">${book.name}</div>
-                <div class="book-desc">${book.desc}</div>
-                ${hasAccess ? 
-                    `<a onclick="downloadFile('${book.id}')" class="btn-action download-btn"><i class="fas fa-download"></i> تحميل الآن</a>` :
-                    `<a onclick="openBuyModal('${book.id}', '${book.name}', ${book.price})" class="btn-action buy-btn"><i class="fas fa-shopping-cart"></i> شراء المذكرة</a>`
-                }
+                <div class="book-desc">${book.desc || 'لا يوجد وصف متاح لهذه المذكرة.'}</div>
+                <div class="actions-flex">
+                    ${hasAccess ? 
+                        `<a onclick="downloadFile('${book.id}')" class="btn-action download-btn"><i class="fas fa-file-pdf"></i> فتح المذكرة</a>` :
+                        `<a onclick="openBuyModal('${book.id}', '${book.name}', ${book.price})" class="btn-action buy-btn"><i class="fas fa-unlock"></i> شراء الآن</a>`
+                    }
+                </div>
             `;
             container.appendChild(card);
         }
 
-        // التحميل
+        // 5. التحميل الفوري
         function downloadFile(bookId) {
+            const btn = event.currentTarget;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الفتح...';
+            
             db.ref('library/' + bookId + '/file').once('value', (snap) => {
+                const data = snap.val();
                 const link = document.createElement('a');
-                link.href = snap.val();
-                link.download = "مذكرة_الأستاذ_أحمد_شعبان.pdf";
+                link.href = data;
+                link.download = `مذكرة_${Date.now()}.pdf`;
+                document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link);
+                btn.innerHTML = '<i class="fas fa-file-pdf"></i> فتح المذكرة';
             });
         }
 
-        // نظام الشراء
+        // 6. الإدارة (تعديل وحذف)
+        function editBook(id) {
+            db.ref('library/' + id).once('value', snap => {
+                const b = snap.val();
+                document.getElementById('edit-id').value = b.id;
+                document.getElementById('book-name').value = b.name;
+                document.getElementById('book-desc').value = b.desc;
+                document.getElementById('book-price').value = b.price;
+                document.getElementById('admin-upload-section').scrollIntoView({behavior: "smooth"});
+                document.getElementById('upload-btn').innerText = "حفظ التعديلات";
+            });
+        }
+
+        function deleteBook(id) {
+            if(confirm("هل أنت متأكد من حذف هذه المذكرة نهائياً؟")) {
+                db.ref('library/' + id).remove().then(() => location.reload());
+            }
+        }
+
+        // 7. نظام الشراء
         let selectedBook = null;
         function openBuyModal(id, name, price) {
             selectedBook = {id, name, price};
-            document.getElementById('modal-title').innerText = "شراء: " + name;
-            document.getElementById('modal-price').innerText = "سعر المذكرة: " + price + " ج.م";
+            document.getElementById('modal-price').innerText = price + " جنيهاً مصرياً";
             document.getElementById('buy-modal').style.display = 'flex';
         }
 
@@ -224,20 +284,23 @@
 
         document.getElementById('confirm-buy-btn').onclick = function() {
             if(userBalance < selectedBook.price) {
-                alert("رصيدك غير كافٍ! يرجى شحن المحفظة.");
+                alert("رصيدك الحالي (" + userBalance + ") لا يكفي لشراء المذكرة.");
                 return;
             }
 
+            this.disabled = true;
+            this.innerText = "جاري المعالجة...";
+
             const newBalance = userBalance - selectedBook.price;
             
-            // 1. خصم الرصيد
-            db.ref('students/' + userPhone + '/balance').set(newBalance);
-            // 2. تسجيل عملية الشراء للطالب
-            db.ref('students/' + userPhone + '/purchasedBooks/' + selectedBook.id).set(true);
-            
-            alert("تم الشراء بنجاح! يمكنك الآن تحميل المذكرة.");
-            closeModal();
-            location.reload();
+            db.ref('students/' + userPhone).update({
+                balance: newBalance
+            }).then(() => {
+                db.ref('students/' + userPhone + '/purchasedBooks/' + selectedBook.id).set(true).then(() => {
+                    alert("تم الشراء بنجاح! الرصيد المتبقي: " + newBalance);
+                    location.reload();
+                });
+            });
         };
 
     </script>
