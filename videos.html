@@ -14,26 +14,36 @@
         .gold-text { color: #d4af37; }
         .gold-bg { background: #d4af37; }
         
-        /* مشغل الفيديو المخصص لضمان بقاء العلامة المائية */
         #custom-player-container {
             position: relative; width: 100%; max-width: 1000px; aspect-ratio: 16/9;
             background: #000; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.1);
         }
         
         #watermark-protected {
-            position: absolute; z-index: 50; pointer-events: none;
-            color: rgba(255, 255, 255, 0.3); font-size: clamp(12px, 2vw, 18px); font-weight: bold;
-            white-space: nowrap; text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
-            transition: all 0.8s ease-in-out;
+            position: absolute; z-index: 100; pointer-events: none;
+            color: rgba(255, 255, 255, 0.25); font-size: clamp(10px, 1.5vw, 16px); 
+            font-weight: bold; white-space: nowrap; 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* منع التحميل */
-        video::-internal-media-controls-download-button { display:none; }
-        video::-webkit-media-controls-enclosure { overflow:hidden; }
-        video::-webkit-media-controls-panel { width: calc(100% + 30px); }
+        /* حماية متقدمة للفيديو */
+        video { width: 100%; height: 100%; object-fit: contain; }
+        video::-webkit-media-controls-panel { background-image: none !important; }
+        video::-internal-media-controls-download-button { display:none !important; }
+        video::-webkit-media-controls-enclosure { overflow:hidden !important; }
+        
+        /* طبقة حماية شفافة فوق الفيديو لمنع النقر اليمين أو السحب */
+        .video-overlay {
+            position: absolute; inset: 0; z-index: 60; background: transparent;
+        }
+
+        /* منع تصوير الشاشة في بعض المتصفحات عبر تعتيم المحتوى عند فقدان التركيز */
+        @media print { body { display:none !important; } }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col" oncontextmenu="return false;">
 
     <nav class="glass sticky top-0 z-50 p-4 flex justify-between items-center border-b border-white/5">
         <div class="flex items-center gap-4">
@@ -45,7 +55,7 @@
                 <p id="user-name" class="text-sm font-bold italic">...</p>
                 <p id="user-role-display" class="text-[10px] gold-text opacity-70 italic font-bold uppercase"></p>
             </div>
-            <button onclick="logout()" class="text-red-500 text-xs font-bold mr-2"><i class="fas fa-sign-out-alt"></i> خروج</button>
+            <button onclick="goToIndex()" class="text-gray-400 hover:text-white text-xs font-bold mr-2"><i class="fas fa-arrow-left"></i> خروج</button>
         </div>
     </nav>
 
@@ -61,7 +71,7 @@
             <div class="flex justify-between items-end mb-8">
                 <div>
                     <h2 id="view-title" class="text-3xl font-black text-white italic">الباقات الدراسية</h2>
-                    <p class="text-gray-500 text-sm mt-2">تحكم كامل في المحتوى التعليمي</p>
+                    <p class="text-gray-500 text-sm mt-2">مرحباً بك في رحلتك التعليمية</p>
                 </div>
                 <button id="back-to-pkgs" class="hidden text-gold-text font-bold" onclick="loadPackages()">
                     <i class="fas fa-arrow-right ml-2"></i> العودة للباقات
@@ -72,11 +82,12 @@
         </div>
     </main>
 
-    <section id="player-view" class="hidden fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-center p-4">
+    <section id="player-view" class="hidden fixed inset-0 z-[200] bg-black/98 flex flex-col items-center justify-center p-4">
         <div id="custom-player-container">
             <div id="watermark-protected"></div>
-            <video id="video-engine" class="w-full h-full" controlsList="nodownload" playsinline></video>
-            <button onclick="closeVideo()" class="absolute top-4 right-4 z-[210] bg-red-600 text-white w-10 h-10 rounded-full flex items-center justify-center hover:rotate-90 transition duration-300">
+            <div class="video-overlay"></div>
+            <video id="video-engine" controlsList="nodownload noremoteplayback" oncontextmenu="return false;" disablePictureInPicture></video>
+            <button onclick="closeVideo()" class="absolute top-4 right-4 z-[210] bg-red-600/50 hover:bg-red-600 text-white w-10 h-10 rounded-full flex items-center justify-center transition duration-300">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -104,7 +115,7 @@
             <input id="lec-id" type="hidden">
             <select id="target-pkg" class="w-full bg-black border border-white/10 p-4 rounded-xl mb-4 text-white"></select>
             <input id="lec-name" type="text" placeholder="اسم المحاضرة" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-4 text-white outline-none">
-            <input id="lec-url" type="text" placeholder="رابط الفيديو" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-6 text-white outline-none">
+            <input id="lec-url" type="text" placeholder="رابط الفيديو (Direct URL or M3U8)" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl mb-6 text-white outline-none">
             <div class="flex gap-2">
                 <button onclick="saveLecture()" class="flex-1 bg-blue-600 text-white font-black p-4 rounded-xl">حفظ</button>
                 <button id="lec-del-btn" onclick="deleteLecture()" class="hidden bg-red-600 text-white font-black p-4 rounded-xl"><i class="fas fa-trash"></i></button>
@@ -135,10 +146,14 @@
 
         if (!userPhone) window.location.href = 'go.html';
 
-        // 1. Auth & Role Management
+        // 1. التوجيه والدخول
         db.ref('students/' + userPhone).on('value', (snap) => {
             currentUser = snap.val();
-            if (!currentUser || currentUser.status === 'blocked') { logout(); return; }
+            if (!currentUser || currentUser.status === 'blocked') { 
+                localStorage.removeItem('userLoggedIn');
+                window.location.href = 'go.html'; 
+                return; 
+            }
             
             document.getElementById('user-name').innerText = currentUser.name;
             document.getElementById('user-role-display').innerText = currentUser.role === 'admin' ? 'المدير العام' : 'طالب';
@@ -148,46 +163,140 @@
             loadPackages();
         });
 
-        // 2. Package Functions (Load, Create, Edit, Delete)
+        function goToIndex() {
+            window.location.href = 'index.html';
+        }
+
+        // 2. تحميل الباقات ونظام الشراء
         function loadPackages() {
             currentOpenPkgId = null;
             document.getElementById('back-to-pkgs').classList.add('hidden');
             document.getElementById('view-title').innerText = "الباقات الدراسية";
             const grid = document.getElementById('dynamic-grid');
-            grid.innerHTML = '<p class="col-span-full text-center gold-text animate-pulse">جاري تحميل الباقات...</p>';
+            grid.innerHTML = '<div class="col-span-full text-center py-20"><i class="fas fa-spinner fa-spin text-4xl gold-text"></i></div>';
 
-            db.ref('packages').on('value', (snap) => {
-                if(currentOpenPkgId) return; // منع التداخل عند تصفح محاضرات
+            db.ref('packages').once('value', (snap) => {
                 grid.innerHTML = '';
-                if (!snap.exists()) { grid.innerHTML = '<p class="col-span-full text-center">لا توجد باقات متاحة.</p>'; return; }
+                if (!snap.exists()) { grid.innerHTML = '<p class="col-span-full text-center opacity-50">لا توجد باقات متاحة حالياً.</p>'; return; }
                 
                 snap.forEach((child) => {
                     const pkg = child.val();
+                    const isPurchased = (currentUser.purchasedPackages && currentUser.purchasedPackages[child.key]) || currentUser.role === 'admin' || pkg.price == 0;
+                    
                     const div = document.createElement('div');
-                    div.className = "glass p-8 rounded-3xl border border-white/5 hover:border-gold-text transition-all cursor-pointer relative group";
+                    div.className = "glass p-8 rounded-3xl border border-white/5 hover:border-gold-text transition-all relative group overflow-hidden";
                     div.innerHTML = `
-                        ${currentUser.role === 'admin' ? `<button onclick="event.stopPropagation(); editPkg('${child.key}', '${pkg.name}', '${pkg.desc}', '${pkg.price}')" class="absolute top-4 left-4 text-gray-500 hover:text-gold-text"><i class="fas fa-edit"></i></button>` : ''}
+                        ${currentUser.role === 'admin' ? `<button onclick="editPkg('${child.key}', '${pkg.name}', '${pkg.desc}', '${pkg.price}')" class="absolute top-4 left-4 text-gray-500 hover:text-gold-text z-10"><i class="fas fa-edit"></i></button>` : ''}
                         <h3 class="text-2xl font-black mb-2 italic">${pkg.name}</h3>
                         <p class="text-gray-500 text-sm mb-6 line-clamp-2">${pkg.desc}</p>
                         <div class="flex justify-between items-center border-t border-white/5 pt-4">
                             <span class="gold-text font-black">${pkg.price} ج.م</span>
-                            <i class="fas fa-play-circle text-2xl opacity-20 group-hover:opacity-100 transition"></i>
+                            ${isPurchased ? 
+                                `<button onclick="loadLectures('${child.key}', '${pkg.name}')" class="bg-gold-text text-black px-4 py-2 rounded-lg text-xs font-bold">دخول المحاضرات</button>` :
+                                `<button onclick="requestPurchase('${child.key}', '${pkg.name}')" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-xs font-bold">اشترك الآن</button>`
+                            }
                         </div>
                     `;
-                    div.onclick = () => {
-                        // التحقق من الشراء للأدمن أو إذا كانت الباقة مجانية أو مشتراة فعلياً
-                        const isPurchased = currentUser.purchasedPackages && currentUser.purchasedPackages[child.key];
-                        if (currentUser.role === 'admin' || isPurchased || pkg.price == 0) {
-                            loadLectures(child.key, pkg.name);
-                        } else {
-                            alert('يجب الاشتراك في هذه الباقة أولاً للوصول للمحاضرات.');
-                        }
-                    };
                     grid.appendChild(div);
                 });
             });
         }
 
+        function requestPurchase(pkgId, pkgName) {
+            if(confirm(`هل تريد إرسال طلب اشتراك في باقة: ${pkgName}؟`)) {
+                db.ref('purchase_requests').push({
+                    userPhone: userPhone,
+                    userName: currentUser.name,
+                    pkgId: pkgId,
+                    pkgName: pkgName,
+                    status: 'pending',
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                }).then(() => {
+                    alert('تم إرسال طلبك بنجاح، سيتم تفعيل الباقة لك فور التأكد من الدفع.');
+                });
+            }
+        }
+
+        // 3. المحاضرات
+        function loadLectures(pkgId, pkgName) {
+            currentOpenPkgId = pkgId;
+            document.getElementById('back-to-pkgs').classList.remove('hidden');
+            document.getElementById('view-title').innerText = pkgName;
+            const grid = document.getElementById('dynamic-grid');
+            grid.innerHTML = '<div class="col-span-full text-center py-20"><i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i></div>';
+
+            db.ref(`lectures/${pkgId}`).on('value', (snap) => {
+                grid.innerHTML = '';
+                if (!snap.exists()) { grid.innerHTML = '<p class="col-span-full text-center opacity-50 italic">قريباً.. سيتم رفع المحاضرات.</p>'; return; }
+                
+                snap.forEach((child) => {
+                    const lec = child.val();
+                    const div = document.createElement('div');
+                    div.className = "glass p-5 rounded-2xl border border-white/5 flex flex-col gap-4 group hover:bg-white/5 transition";
+                    div.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 gold-bg rounded-lg flex items-center justify-center text-black font-black shadow-lg">LEC</div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-white text-sm">${lec.name}</h4>
+                                <p class="text-[10px] text-gray-500 italic">بواسطة الأستاذ أحمد شعبان</p>
+                            </div>
+                            ${currentUser.role === 'admin' ? `<button onclick="editLec('${pkgId}', '${child.key}', '${lec.name}', '${lec.url}')" class="text-blue-500 p-2"><i class="fas fa-cog"></i></button>` : ''}
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                             <button onclick="startLearning('${lec.url}', '${lec.name}')" class="bg-gold-text text-black py-2.5 rounded-xl text-xs font-black transition active:scale-95">مشاهدة الآن</button>
+                             <button onclick="alert('الامتحان غير متاح حالياً')" class="bg-white/5 hover:bg-white/10 py-2.5 rounded-xl text-xs font-bold transition">الامتحان</button>
+                        </div>
+                    `;
+                    grid.appendChild(div);
+                });
+            });
+        }
+
+        // 4. نظام الفيديو والحماية القصوى
+        function startLearning(url, title) {
+            const player = document.getElementById('player-view');
+            const video = document.getElementById('video-engine');
+            document.getElementById('playing-title').innerText = title;
+            player.classList.remove('hidden');
+
+            if (Hls.isSupported() && url.includes('.m3u8')) {
+                const hls = new Hls(); hls.loadSource(url); hls.attachMedia(video);
+            } else { video.src = url; }
+            
+            video.play().catch(() => {
+                alert("يرجى النقر لتشغيل الفيديو");
+            });
+
+            // سجل المشاهدة للأمان
+            db.ref(`admin/watch_logs/${userPhone}`).push({
+                name: currentUser.name,
+                video: title,
+                time: new Date().toLocaleString()
+            });
+
+            moveWatermark();
+            window.wmInterval = setInterval(moveWatermark, 3000);
+        }
+
+        function moveWatermark() {
+            const wm = document.getElementById('watermark-protected');
+            const container = document.getElementById('custom-player-container');
+            if(!container) return;
+            const maxX = container.clientWidth - wm.clientWidth - 40;
+            const maxY = container.clientHeight - wm.clientHeight - 40;
+            wm.style.left = Math.max(20, Math.random() * maxX) + 'px';
+            wm.style.top = Math.max(20, Math.random() * maxY) + 'px';
+            wm.style.opacity = (Math.random() * 0.3) + 0.1; // تغيير الشفافية لجعل إزالتها أصعب
+        }
+
+        function closeVideo() {
+            const video = document.getElementById('video-engine');
+            video.pause(); video.src = "";
+            document.getElementById('player-view').classList.add('hidden');
+            clearInterval(window.wmInterval);
+        }
+
+        // 5. وظائف الأدمن (Modal)
         function openPkgModal() {
             document.getElementById('pkg-id').value = '';
             document.getElementById('pkg-name').value = '';
@@ -215,11 +324,11 @@
             };
             if (!data.name) return;
             const ref = id ? db.ref('packages/' + id) : db.ref('packages').push();
-            ref.set(data).then(() => { toggleModal('pkg-modal'); });
+            ref.update(data).then(() => { toggleModal('pkg-modal'); loadPackages(); });
         }
 
         function deletePackage() {
-            if (confirm('هل أنت متأكد من حذف الباقة وجميع محاضراتها؟')) {
+            if (confirm('سيتم حذف الباقة ومحاضراتها نهائياً، هل أنت متأكد؟')) {
                 const id = document.getElementById('pkg-id').value;
                 db.ref('packages/' + id).remove();
                 db.ref('lectures/' + id).remove();
@@ -227,47 +336,11 @@
             }
         }
 
-        // 3. Lecture Functions (Load, Create, Edit, Delete)
-        function loadLectures(pkgId, pkgName) {
-            currentOpenPkgId = pkgId;
-            document.getElementById('back-to-pkgs').classList.remove('hidden');
-            document.getElementById('view-title').innerText = pkgName;
-            const grid = document.getElementById('dynamic-grid');
-            grid.innerHTML = '<p class="col-span-full text-center text-blue-500">جاري تحميل المحاضرات...</p>';
-
-            db.ref(`lectures/${pkgId}`).on('value', (snap) => {
-                grid.innerHTML = '';
-                if (!snap.exists()) { grid.innerHTML = '<p class="col-span-full text-center opacity-50">لا توجد محاضرات في هذه الباقة.</p>'; return; }
-                
-                snap.forEach((child) => {
-                    const lec = child.val();
-                    const div = document.createElement('div');
-                    div.className = "glass p-5 rounded-2xl border border-white/5 flex flex-col gap-4 group";
-                    div.innerHTML = `
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 gold-bg rounded-lg flex items-center justify-center text-black font-black">LEC</div>
-                            <div class="flex-1">
-                                <h4 class="font-bold text-white">${lec.name}</h4>
-                                <p class="text-[10px] text-gray-500">محاضرة تعليمية</p>
-                            </div>
-                            ${currentUser.role === 'admin' ? `<button onclick="editLec('${pkgId}', '${child.key}', '${lec.name}', '${lec.url}')" class="text-blue-500"><i class="fas fa-cog"></i></button>` : ''}
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                             <button onclick="startLearning('${lec.url}', '${lec.name}')" class="bg-white/5 hover:bg-gold-text hover:text-black py-2 rounded-xl text-xs font-bold transition">مشاهدة</button>
-                             <button onclick="window.location.href='exams.html'" class="bg-white/5 hover:bg-blue-600 py-2 rounded-xl text-xs font-bold transition">الامتحان</button>
-                        </div>
-                    `;
-                    grid.appendChild(div);
-                });
-            });
-        }
-
         function openLecModal() {
             document.getElementById('lec-id').value = '';
             document.getElementById('lec-name').value = '';
             document.getElementById('lec-url').value = '';
             document.getElementById('lec-del-btn').classList.add('hidden');
-            
             const select = document.getElementById('target-pkg');
             select.innerHTML = '';
             db.ref('packages').once('value', snap => {
@@ -281,81 +354,51 @@
             document.getElementById('lec-id').value = lecId;
             document.getElementById('lec-name').value = name;
             document.getElementById('lec-url').value = url;
-            document.getElementById('lec-del-btn').classList.remove('hidden');
-            
             const select = document.getElementById('target-pkg');
             select.innerHTML = `<option value="${pkgId}">${pkgId}</option>`;
-            select.disabled = true;
+            document.getElementById('lec-del-btn').classList.remove('hidden');
             toggleModal('lec-modal');
         }
 
         function saveLecture() {
             const pkgId = document.getElementById('target-pkg').value;
             const lecId = document.getElementById('lec-id').value;
-            const data = {
-                name: document.getElementById('lec-name').value,
-                url: document.getElementById('lec-url').value
-            };
+            const data = { name: document.getElementById('lec-name').value, url: document.getElementById('lec-url').value };
             if (!data.name || !data.url) return;
             const ref = lecId ? db.ref(`lectures/${pkgId}/${lecId}`) : db.ref(`lectures/${pkgId}`).push();
-            ref.set(data).then(() => { toggleModal('lec-modal'); document.getElementById('target-pkg').disabled = false; });
+            ref.set(data).then(() => { toggleModal('lec-modal'); });
         }
 
         function deleteLecture() {
-            if (confirm('حذف هذه المحاضرة نهائياً؟')) {
+            if (confirm('حذف المحاضرة؟')) {
                 const pkgId = document.getElementById('target-pkg').value;
                 const lecId = document.getElementById('lec-id').value;
                 db.ref(`lectures/${pkgId}/${lecId}`).remove();
                 toggleModal('lec-modal');
-                document.getElementById('target-pkg').disabled = false;
             }
         }
 
-        // 4. Video & Watermark System (Full Screen Safe)
-        function startLearning(url, title) {
-            const player = document.getElementById('player-view');
-            const video = document.getElementById('video-engine');
-            document.getElementById('playing-title').innerText = title;
-            player.classList.remove('hidden');
-
-            if (Hls.isSupported() && url.includes('.m3u8')) {
-                const hls = new Hls(); hls.loadSource(url); hls.attachMedia(video);
-            } else { video.src = url; }
-            
-            video.play();
-            db.ref(`admin/watch_logs/${userPhone}`).push({ name: currentUser.name, video: title, time: new Date().toLocaleString() });
-
-            moveWatermark();
-            window.wmInterval = setInterval(moveWatermark, 4000);
-        }
-
-        function moveWatermark() {
-            const wm = document.getElementById('watermark-protected');
-            const container = document.getElementById('custom-player-container');
-            const maxX = container.clientWidth - wm.clientWidth - 20;
-            const maxY = container.clientHeight - wm.clientHeight - 20;
-            wm.style.left = Math.max(10, Math.random() * maxX) + 'px';
-            wm.style.top = Math.max(10, Math.random() * maxY) + 'px';
-        }
-
-        function closeVideo() {
-            const video = document.getElementById('video-engine');
-            video.pause(); video.src = "";
-            document.getElementById('player-view').classList.add('hidden');
-            clearInterval(window.wmInterval);
-        }
-
         function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
-        
-        function logout() { 
-            // حذف رقم الهاتف المخزن فقط للعودة لصفحة الدخول دون حذف الحساب من السيرفر
-            localStorage.removeItem('userLoggedIn'); 
-            window.location.href = 'go.html'; 
-        }
 
-        // أمان إضافي
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.onkeydown = (e) => { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false; };
+        // 6. إجراءات أمنية مشددة (Anti-Theft)
+        setInterval(() => {
+            // كشف محاولة فتح Console وتخريب الصفحة
+            if (window.outerHeight - window.innerHeight > 200 || window.outerWidth - window.innerWidth > 200) {
+                document.body.innerHTML = "<div style='color:white;text-align:center;margin-top:20%;font-family:Cairo;'>عذراً، يرجى إغلاق أدوات المطورين للمتابعة.</div>";
+            }
+        }, 1000);
+
+        document.onkeydown = (e) => {
+            // منع F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S
+            if (e.keyCode == 123 || 
+                (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || 
+                (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
+                return false;
+            }
+        };
+
+        // منع سحب الفيديوهات أو الصور
+        document.addEventListener('dragstart', (e) => e.preventDefault());
     </script>
 </body>
 </html>
