@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المكتبة الذهبية | الأستاذ أحمد شعبان</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #d4af37; --bg: #050505; --card-bg: rgba(255, 255, 255, 0.03); 
+            --text: #e2e8f0; --gold: #d4af37;
+        }
+        body { background: var(--bg); color: var(--text); font-family: 'Cairo', sans-serif; margin: 0; padding-bottom: 100px; }
+        
+        .container { padding: 20px; max-width: 1200px; margin: 80px auto 0; }
+        h1 { text-align: center; color: var(--primary); margin-bottom: 30px; font-weight: 900; }
+
+        /* تنسيق لوحة الأدمن للرفع */
+        #admin-upload-section {
+            background: rgba(212, 175, 55, 0.05); border: 2px dashed var(--primary);
+            padding: 20px; border-radius: 20px; margin-bottom: 40px; display: none;
+        }
+        .form-group { margin-bottom: 15px; }
+        input, textarea, select {
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #333;
+            background: #111; color: white; margin-top: 5px;
+        }
+        .btn-upload {
+            background: var(--primary); color: #000; border: none; padding: 12px 25px;
+            border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px;
+        }
+
+        /* تنسيق عرض المذكرات */
+        .library-grid { display: grid; grid-template-columns: repeat(auto-fill, min-minmax(300px, 1fr)); gap: 20px; }
+        .book-card {
+            background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);
+            padding: 20px; border-radius: 20px; position: relative; overflow: hidden;
+            transition: 0.3s;
+        }
+        .book-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .book-price {
+            position: absolute; top: 15px; left: 15px; background: var(--primary);
+            color: #000; padding: 2px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;
+        }
+        .book-title { font-size: 1.2rem; font-weight: bold; margin: 15px 0 10px; color: var(--primary); }
+        .book-desc { font-size: 0.9rem; opacity: 0.7; line-height: 1.6; margin-bottom: 20px; height: 50px; overflow: hidden; }
+        
+        .btn-action {
+            display: block; text-align: center; padding: 10px; border-radius: 10px;
+            text-decoration: none; font-weight: bold; transition: 0.3s; cursor: pointer;
+        }
+        .buy-btn { background: #222; color: var(--primary); border: 1px solid var(--primary); }
+        .download-btn { background: var(--primary); color: #000; }
+
+        /* نافذة الـ Modal */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .modal-content { background: #111; padding: 30px; border-radius: 20px; text-align: center; width: 90%; max-width: 400px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1><i class="fas fa-book-open"></i> المكتبة الرقمية الذهبية</h1>
+
+        <section id="admin-upload-section">
+            <h3 style="margin-bottom: 15px;"><i class="fas fa-plus-circle"></i> إضافة مذكرة جديدة</h3>
+            <div class="form-group">
+                <input type="text" id="book-name" placeholder="اسم المذكرة (مثال: فلسفة البيئة - ملخص)">
+            </div>
+            <div class="form-group">
+                <textarea id="book-desc" rows="2" placeholder="وصف قصير للمذكرة..."></textarea>
+            </div>
+            <div class="form-group">
+                <input type="number" id="book-price" placeholder="سعر المذكرة (ضع 0 لتكون مجانية)">
+            </div>
+            <div class="form-group">
+                <label style="font-size: 0.8rem;">اختر ملف المذكرة (PDF):</label>
+                <input type="file" id="book-file" accept=".pdf">
+            </div>
+            <button class="btn-upload" onclick="uploadBook()">نشر المذكرة للطلاب</button>
+        </section>
+
+        <div class="library-grid" id="library-container">
+            </div>
+    </div>
+
+    <div id="buy-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">تأكيد الشراء</h3>
+            <p id="modal-price" style="margin: 15px 0; color: var(--primary);"></p>
+            <button class="btn-upload" id="confirm-buy-btn">تأكيد خصم الرصيد</button>
+            <button onclick="closeModal()" style="background:transparent; color:white; border:none; margin-top:10px; cursor:pointer;">إلغاء</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <script>
+        // إعدادات Firebase (نفس التي استخدمتها)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfkxj5I7UOEETOf9GRqGgqEaEoqPtPMek",
+            authDomain: "mrahmed-925d8.firebaseapp.com",
+            databaseURL: "https://mrahmed-925d8-default-rtdb.firebaseio.com",
+            projectId: "mrahmed-925d8",
+            storageBucket: "mrahmed-925d8.firebasestorage.app",
+            messagingSenderId: "83939909031",
+            appId: "1:83939909031:web:adb0b10d41b9df6c602a82"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const userPhone = localStorage.getItem('userLoggedIn');
+        let userRole = "student";
+        let userBalance = 0;
+
+        // التحقق من هوية المستخدم وصلاحياته
+        db.ref('students/' + userPhone).on('value', (snap) => {
+            const data = snap.val();
+            if(data) {
+                userRole = data.role;
+                userBalance = data.balance || 0;
+                if(userRole === "admin" || userPhone === "01025768529") {
+                    document.getElementById('admin-upload-section').style.display = 'block';
+                }
+            }
+        });
+
+        // تحويل الملف لنص Base64 (كما طلبت ليخزن في الداتابيز مباشرة)
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // دالة الرفع (للأستاذ)
+        async function uploadBook() {
+            const name = document.getElementById('book-name').value;
+            const desc = document.getElementById('book-desc').value;
+            const price = parseInt(document.getElementById('book-price').value);
+            const fileInput = document.getElementById('book-file');
+
+            if(!name || !fileInput.files[0]) { alert("أكمل البيانات واختر ملفاً!"); return; }
+
+            const fileBase64 = await toBase64(fileInput.files[0]);
+            const bookId = Date.now();
+
+            db.ref('library/' + bookId).set({
+                id: bookId,
+                name: name,
+                desc: desc,
+                price: price,
+                file: fileBase64 // المذكرة هنا مخزنة كـ String طويل
+            }).then(() => {
+                alert("تم نشر المذكرة بنجاح!");
+                location.reload();
+            });
+        }
+
+        // جلب المذكرات وعرضها
+        db.ref('library').on('value', (snapshot) => {
+            const container = document.getElementById('library-container');
+            container.innerHTML = '';
+            const books = snapshot.val();
+
+            for (let id in books) {
+                const book = books[id];
+                checkAccess(book);
+            }
+        });
+
+        function checkAccess(book) {
+            // نتحقق إذا كان الطالب قد اشترى المذكرة مسبقاً
+            db.ref('students/' + userPhone + '/purchasedBooks/' + book.id).once('value', (snap) => {
+                const hasAccess = snap.exists() || book.price === 0 || userRole === "admin";
+                renderBookCard(book, hasAccess);
+            });
+        }
+
+        function renderBookCard(book, hasAccess) {
+            const container = document.getElementById('library-container');
+            const card = document.createElement('div');
+            card.className = 'book-card';
+            
+            card.innerHTML = `
+                <div class="book-price">${book.price === 0 ? 'مجانية' : book.price + ' ج.م'}</div>
+                <div class="book-title">${book.name}</div>
+                <div class="book-desc">${book.desc}</div>
+                ${hasAccess ? 
+                    `<a onclick="downloadFile('${book.id}')" class="btn-action download-btn"><i class="fas fa-download"></i> تحميل الآن</a>` :
+                    `<a onclick="openBuyModal('${book.id}', '${book.name}', ${book.price})" class="btn-action buy-btn"><i class="fas fa-shopping-cart"></i> شراء المذكرة</a>`
+                }
+            `;
+            container.appendChild(card);
+        }
+
+        // التحميل
+        function downloadFile(bookId) {
+            db.ref('library/' + bookId + '/file').once('value', (snap) => {
+                const link = document.createElement('a');
+                link.href = snap.val();
+                link.download = "مذكرة_الأستاذ_أحمد_شعبان.pdf";
+                link.click();
+            });
+        }
+
+        // نظام الشراء
+        let selectedBook = null;
+        function openBuyModal(id, name, price) {
+            selectedBook = {id, name, price};
+            document.getElementById('modal-title').innerText = "شراء: " + name;
+            document.getElementById('modal-price').innerText = "سعر المذكرة: " + price + " ج.م";
+            document.getElementById('buy-modal').style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('buy-modal').style.display = 'none'; }
+
+        document.getElementById('confirm-buy-btn').onclick = function() {
+            if(userBalance < selectedBook.price) {
+                alert("رصيدك غير كافٍ! يرجى شحن المحفظة.");
+                return;
+            }
+
+            const newBalance = userBalance - selectedBook.price;
+            
+            // 1. خصم الرصيد
+            db.ref('students/' + userPhone + '/balance').set(newBalance);
+            // 2. تسجيل عملية الشراء للطالب
+            db.ref('students/' + userPhone + '/purchasedBooks/' + selectedBook.id).set(true);
+            
+            alert("تم الشراء بنجاح! يمكنك الآن تحميل المذكرة.");
+            closeModal();
+            location.reload();
+        };
+
+    </script>
+</body>
+</html>
