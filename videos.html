@@ -3,136 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محاضرات  الأستاذ أحمد شعبان</title>
+    <title>منصة الأستاذ أحمد شعبان | الإصدار الاحترافي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
         body { font-family: 'Cairo', sans-serif; background-color: #050505; color: #e2e8f0; user-select: none; -webkit-user-select: none; overflow-x: hidden; }
-        .glass { background: rgba(15, 15, 15, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.1); }
+        .glass { background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.1); }
         .gold-text { color: #d4af37; }
         .gold-bg { background: #d4af37; }
         
-        /* مشغل الفيديو المطور */
+        /* العلامة المائية المحسنة */
+        #watermark-protected {
+            position: absolute; z-index: 9999; pointer-events: none;
+            color: rgba(255, 255, 255, 0.7); font-size: 24px; 
+            font-weight: 900; white-space: nowrap; 
+            text-shadow: 2px 2px 5px #000;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         #custom-player-container {
             position: relative; width: 100%; max-width: 900px; aspect-ratio: 16/9;
             background: #000; border-radius: 20px; overflow: hidden;
-            box-shadow: 0 0 50px rgba(212, 175, 55, 0.15);
-        }
-        
-        #watermark-protected {
-            position: absolute; z-index: 100; pointer-events: none;
-            color: rgba(255, 255, 255, 0.6); font-size: 20px; 
-            font-weight: 900; white-space: nowrap; 
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
-            transition: all 0.8s ease-in-out;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.1);
         }
 
-        .video-overlay { position: absolute; inset: 0; z-index: 60; background: transparent; }
-        
-        /* إشعارات أنيقة */
+        video { width: 100%; height: 100%; }
+
+        /* إشعارات المنصة */
         .toast {
-            position: fixed; bottom: 20px; left: 20px; padding: 15px 25px;
-            border-radius: 12px; background: #111; border: 1px solid #d4af37;
-            color: white; z-index: 1000; transform: translateY(150%);
-            transition: 0.5s; display: flex; align-items: center; gap: 10px;
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%);
+            padding: 15px 30px; border-radius: 15px; background: #111; border: 1px solid #d4af37;
+            color: white; z-index: 10000; transition: 0.5s; font-weight: bold;
         }
-        .toast.show { transform: translateY(0); }
-
-        /* سكرول بار مخفي */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 10px; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col" oncontextmenu="return false;">
 
-    <nav class="glass sticky top-0 z-50 p-4 flex justify-between items-center border-b border-white/5">
+    <nav class="glass sticky top-0 z-[100] p-4 flex justify-between items-center border-b border-white/5">
         <div class="flex items-center gap-4">
-            <h1 class="text-lg font-black italic">أحمد <span class="gold-text">شعبان</span></h1>
-            <div class="h-6 w-[1px] bg-white/10 mx-2"></div>
-            <div class="flex flex-col">
-                <span id="user-name" class="text-sm font-bold">...</span>
-                <span class="text-[10px] gold-text">المحفظة: <span id="user-wallet">0</span> ج.م</span>
+            <h1 class="text-xl font-black gold-text italic">أحمد شعبان</h1>
+            <div class="hidden md:block text-xs bg-white/5 p-2 rounded-lg">
+                <span id="user-name">...</span> | 
+                <span class="gold-text">المحفظة: <span id="user-wallet">0</span> ج.م</span>
             </div>
         </div>
-        <div class="flex items-center gap-3">
-            <button onclick="location.href='index.html'" class="text-gray-400 hover:text-white text-sm"><i class="fas fa-home"></i></button>
-            <button onclick="logout()" class="bg-red-600/20 text-red-500 px-3 py-1 rounded-lg text-xs font-bold">خروج</button>
+        <div class="flex items-center gap-4">
+            <button onclick="location.href='index.html'" class="text-gray-400"><i class="fas fa-home"></i></button>
+            <button onclick="logout()" class="text-red-500 text-xs font-bold">خروج</button>
         </div>
     </nav>
 
-    <div id="admin-panel" class="hidden glass m-4 p-6 rounded-2xl border-gold-text/20">
-        <h3 class="gold-text font-black mb-4"><i class="fas fa-crown mr-2"></i> لوحة تحكم المستر</h3>
-        <div class="flex flex-wrap gap-3">
-            <button onclick="openPkgModal()" class="bg-gold-text text-black px-5 py-2 rounded-xl font-bold text-sm">باقة جديدة</button>
-            <button onclick="openLecModal()" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-bold text-sm">محاضرة جديدة</button>
-            <button onclick="toggleAdminView('requests')" class="bg-white/10 px-5 py-2 rounded-xl font-bold text-sm">طلبات الاشتراك</button>
-            <button onclick="toggleAdminView('logs')" class="bg-white/10 px-5 py-2 rounded-xl font-bold text-sm">سجل المشاهدة</button>
+    <div id="admin-panel" class="hidden m-4 p-6 glass rounded-2xl border-gold-text/20">
+        <div class="flex flex-wrap gap-4 items-center">
+            <h3 class="gold-text font-black ml-4">لوحة المستر:</h3>
+            <button onclick="openPkgModal()" class="bg-gold-text text-black px-4 py-2 rounded-lg font-bold text-xs">إضافة باقة</button>
+            <button onclick="openLecModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xs">إضافة محاضرة</button>
+            <button onclick="toggleAdminView('logs')" class="bg-white/10 px-4 py-2 rounded-lg font-bold text-xs">سجل المشاهدات</button>
         </div>
-
-        <div id="admin-data-view" class="mt-6 overflow-x-auto hidden">
-             <table class="w-full text-right text-sm">
-                 <thead class="bg-white/5 text-gold-text">
-                     <tr id="table-head"></tr>
-                 </thead>
-                 <tbody id="table-body"></tbody>
-             </table>
+        
+        <div id="admin-logs-view" class="mt-6 hidden max-h-60 overflow-y-auto">
+            <table class="w-full text-right text-xs">
+                <thead class="sticky top-0 bg-black text-gold-text">
+                    <tr><th class="p-2">الطالب</th><th class="p-2">الفيديو</th><th class="p-2">التوقيت</th></tr>
+                </thead>
+                <tbody id="logs-body"></tbody>
+            </table>
         </div>
     </div>
 
     <main class="flex-1 p-6">
         <div class="max-w-6xl mx-auto">
-            <div class="flex justify-between items-center mb-8">
-                <h2 id="view-title" class="text-2xl font-black italic">الباقات المتاحة</h2>
-                <button id="back-to-pkgs" class="hidden text-gold-text text-sm font-bold" onclick="loadPackages()">
-                    <i class="fas fa-chevron-right ml-1"></i> العودة للباقات
-                </button>
+            <div class="flex justify-between items-center mb-10">
+                <h2 id="view-title" class="text-2xl font-black italic">محتوى المنصة</h2>
+                <button id="back-btn" class="hidden gold-text font-bold" onclick="loadPackages()">العودة للباقات <i class="fas fa-arrow-left"></i></button>
             </div>
-            <div id="dynamic-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="dynamic-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
         </div>
     </main>
 
-    <section id="player-view" class="hidden fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-center p-4">
+    <section id="player-view" class="hidden fixed inset-0 z-[500] bg-black/98 flex flex-col items-center justify-center p-4">
         <div id="custom-player-container">
             <div id="watermark-protected"></div>
-            <video id="video-engine" controlsList="nodownload" disablePictureInPicture></video>
-            <button onclick="closeVideo()" class="absolute top-4 right-4 z-[210] bg-black/50 text-white w-10 h-10 rounded-full flex items-center justify-center">
-                <i class="fas fa-times"></i>
-            </button>
+            <video id="video-engine" controls controlsList="nodownload" oncontextmenu="return false;"></video>
+            <button onclick="closeVideo()" class="absolute top-4 right-4 bg-red-600 text-white w-10 h-10 rounded-full z-[600]"><i class="fas fa-times"></i></button>
         </div>
-        <h3 id="playing-title" class="mt-6 text-xl font-black gold-text italic"></h3>
+        <h3 id="playing-title" class="mt-6 text-xl gold-text font-black italic"></h3>
     </section>
 
-    <div id="pkg-modal" class="hidden fixed inset-0 z-[300] bg-black/90 flex items-center justify-center p-4">
+    <div id="pkg-modal" class="hidden fixed inset-0 z-[1000] bg-black/90 flex items-center justify-center p-4">
         <div class="glass w-full max-w-md p-8 rounded-3xl">
-            <h3 class="gold-text font-black mb-4">إعداد باقة</h3>
-            <input id="pkg-id" type="hidden">
-            <input id="pkg-name" type="text" placeholder="اسم الباقة" class="w-full bg-white/5 p-4 rounded-xl mb-3 outline-none border border-white/10">
-            <input id="pkg-price" type="number" placeholder="سعر الباقة" class="w-full bg-white/5 p-4 rounded-xl mb-3 outline-none border border-white/10">
-            <textarea id="pkg-desc" placeholder="وصف قصير" class="w-full bg-white/5 p-4 rounded-xl mb-4 outline-none border border-white/10"></textarea>
-            <button onclick="savePackage()" class="w-full gold-bg text-black font-black p-4 rounded-xl">حفظ البيانات</button>
-            <button onclick="toggleModal('pkg-modal')" class="w-full text-gray-500 mt-4 text-sm">إغلاق</button>
+            <h3 class="gold-text font-black mb-4">بيانات الباقة الجديدة</h3>
+            <input id="p-name" type="text" placeholder="اسم الباقة" class="w-full bg-white/5 p-4 rounded-xl mb-3 outline-none border border-white/10">
+            <input id="p-price" type="number" placeholder="السعر" class="w-full bg-white/5 p-4 rounded-xl mb-4 outline-none border border-white/10">
+            <button onclick="savePackage()" class="w-full gold-bg text-black font-black p-4 rounded-xl">حفظ</button>
+            <button onclick="toggleModal('pkg-modal')" class="w-full mt-4 text-gray-500">إلغاء</button>
         </div>
     </div>
 
-    <div id="lec-modal" class="hidden fixed inset-0 z-[300] bg-black/90 flex items-center justify-center p-4">
+    <div id="lec-modal" class="hidden fixed inset-0 z-[1000] bg-black/90 flex items-center justify-center p-4">
         <div class="glass w-full max-w-md p-8 rounded-3xl">
-            <h3 class="text-blue-500 font-black mb-4">إضافة محاضرة</h3>
-            <input id="lec-id" type="hidden">
-            <select id="target-pkg" class="w-full bg-black border border-white/10 p-4 rounded-xl mb-3"></select>
-            <input id="lec-name" type="text" placeholder="عنوان المحاضرة" class="w-full bg-white/5 p-4 rounded-xl mb-3 outline-none border border-white/10">
-            <input id="lec-url" type="text" placeholder="رابط الفيديو" class="w-full bg-white/5 p-4 rounded-xl mb-3 outline-none border border-white/10">
-            <div class="flex items-center gap-2 mb-4 p-2 bg-white/5 rounded-lg">
-                <input type="checkbox" id="has-exam" class="w-4 h-4">
-                <label for="has-exam" class="text-sm">ربط امتحان بهذه المحاضرة؟</label>
-            </div>
-            <button onclick="saveLecture()" class="w-full bg-blue-600 text-white font-black p-4 rounded-xl">حفظ المحاضرة</button>
-            <button onclick="toggleModal('lec-modal')" class="w-full text-gray-500 mt-4 text-sm">إغلاق</button>
+            <h3 class="text-blue-500 font-black mb-4">بيانات المحاضرة</h3>
+            <select id="l-target" class="w-full bg-black border border-white/10 p-4 rounded-xl mb-3"></select>
+            <input id="l-name" type="text" placeholder="عنوان المحاضرة" class="w-full bg-white/5 p-4 rounded-xl mb-3 outline-none border border-white/10">
+            <input id="l-url" type="text" placeholder="رابط الفيديو المباشر" class="w-full bg-white/5 p-4 rounded-xl mb-4 outline-none border border-white/10">
+            <label class="flex items-center gap-2 mb-4 cursor-pointer">
+                <input type="checkbox" id="l-exam" class="w-5 h-5"> <span>إضافة امتحان لهذه المحاضرة</span>
+            </label>
+            <button onclick="saveLecture()" class="w-full bg-blue-600 text-white font-black p-4 rounded-xl">نشر المحاضرة</button>
+            <button onclick="toggleModal('lec-modal')" class="w-full mt-4 text-gray-500">إلغاء</button>
         </div>
     </div>
 
-    <div id="toast" class="toast"><i class="fas fa-bell gold-text"></i> <span id="toast-msg"></span></div>
+    <div id="toast" class="toast"></div>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -152,47 +137,35 @@
         const userPhone = localStorage.getItem('userLoggedIn');
         let currentUser = null;
 
-        if (!userPhone) window.location.href = 'go.html';
-
-        // 1. مراقبة حالة الطالب والأمان
+        // التحقق من المستخدم والحظر
         db.ref('students/' + userPhone).on('value', (snap) => {
             currentUser = snap.val();
             if (!currentUser || currentUser.status === 'blocked') {
-                window.location.href = 'contact.html';
-                return;
+                location.href = 'contact.html'; return;
             }
             document.getElementById('user-name').innerText = currentUser.name;
             document.getElementById('user-wallet').innerText = currentUser.wallet || 0;
-            document.getElementById('watermark-protected').innerText = `${userPhone} | ${currentUser.name}`;
-            
-            if (currentUser.role === 'admin') {
-                document.getElementById('admin-panel').classList.remove('hidden');
-            }
+            if (currentUser.role === 'admin') document.getElementById('admin-panel').classList.remove('hidden');
             loadPackages();
         });
 
-        // 2. تحميل الباقات ونظام الخصم من المحفظة
+        // نظام الباقات والمحفظة
         function loadPackages() {
-            document.getElementById('back-to-pkgs').classList.add('hidden');
-            document.getElementById('view-title').innerText = "الباقات المتاحة";
+            document.getElementById('back-btn').classList.add('hidden');
             const grid = document.getElementById('dynamic-grid');
             grid.innerHTML = '';
-
-            db.ref('packages').once('value', (snap) => {
-                snap.forEach((child) => {
-                    const pkg = child.val();
-                    const isOwned = (currentUser.purchasedPackages && currentUser.purchasedPackages[child.key]) || currentUser.role === 'admin';
-                    
+            db.ref('packages').once('value', s => {
+                s.forEach(child => {
+                    const p = child.val();
+                    const owned = (currentUser.purchasedPackages && currentUser.purchasedPackages[child.key]) || currentUser.role === 'admin';
                     grid.innerHTML += `
-                        <div class="glass p-6 rounded-2xl border border-white/5 relative">
-                            ${currentUser.role === 'admin' ? `<button onclick="deletePackage('${child.key}')" class="absolute top-4 left-4 text-red-500 text-xs"><i class="fas fa-trash"></i></button>` : ''}
-                            <h3 class="text-xl font-bold italic mb-2">${pkg.name}</h3>
-                            <p class="text-xs text-gray-500 mb-4 h-8 overflow-hidden">${pkg.desc}</p>
-                            <div class="flex justify-between items-center mt-4">
-                                <span class="gold-text font-black text-sm">${pkg.price} ج.م</span>
-                                <button onclick="${isOwned ? `loadLectures('${child.key}', '${pkg.name}')` : `buyPackage('${child.key}', ${pkg.price})`}" 
-                                        class="${isOwned ? 'bg-white/10' : 'gold-bg text-black'} px-4 py-2 rounded-lg text-[10px] font-bold">
-                                    ${isOwned ? 'دخول المحتوى' : 'شراء من المحفظة'}
+                        <div class="glass p-6 rounded-3xl border border-white/5 hover:border-gold-text transition-all">
+                            <h3 class="text-xl font-bold italic mb-4">${p.name}</h3>
+                            <div class="flex justify-between items-center">
+                                <span class="gold-text font-black">${p.price} ج.م</span>
+                                <button onclick="${owned ? `loadLectures('${child.key}', '${p.name}')` : `buyPkg('${child.key}', ${p.price})`}" 
+                                    class="${owned ? 'bg-white/10' : 'gold-bg text-black'} px-6 py-2 rounded-xl text-xs font-black">
+                                    ${owned ? 'دخول' : 'شراء الآن'}
                                 </button>
                             </div>
                         </div>`;
@@ -200,51 +173,42 @@
             });
         }
 
-        async function buyPackage(pkgId, price) {
+        async function buyPkg(id, price) {
             const wallet = currentUser.wallet || 0;
-            if (wallet < price) {
-                showToast("رصيدك غير كافٍ، تواصل مع المستر لشحن المحفظة");
-                return;
-            }
-
-            if (confirm(`هل تريد خصم ${price} ج.م من محفظتك والاشتراك فوراً؟`)) {
-                const newWallet = wallet - price;
+            if (wallet < price) return showToast("عذراً، رصيدك في المحفظة لا يكفي!");
+            if (confirm(`خصم ${price} ج.م من محفظتك؟`)) {
                 await db.ref(`students/${userPhone}`).update({
-                    wallet: newWallet,
-                    [`purchasedPackages/${pkgId}`]: true
+                    wallet: wallet - price,
+                    [`purchasedPackages/${id}`]: true
                 });
-                showToast("مبروك! تم تفعيل الباقة بنجاح");
+                showToast("تم الاشتراك بنجاح!");
             }
         }
 
-        // 3. عرض المحاضرات والامتحانات
+        // المحاضرات والامتحانات
         function loadLectures(pkgId, pkgName) {
-            document.getElementById('back-to-pkgs').classList.remove('hidden');
+            document.getElementById('back-btn').classList.remove('hidden');
             document.getElementById('view-title').innerText = pkgName;
             const grid = document.getElementById('dynamic-grid');
             grid.innerHTML = '';
-
-            db.ref(`lectures/${pkgId}`).on('value', (snap) => {
+            db.ref(`lectures/${pkgId}`).on('value', s => {
                 grid.innerHTML = '';
-                snap.forEach((child) => {
-                    const lec = child.val();
+                s.forEach(c => {
+                    const l = c.val();
                     grid.innerHTML += `
-                        <div class="glass p-4 rounded-xl border border-white/5 flex flex-col gap-3">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 gold-bg rounded flex items-center justify-center text-black font-black text-xs">LEC</div>
-                                <h4 class="font-bold text-sm">${lec.name}</h4>
-                            </div>
+                        <div class="glass p-5 rounded-2xl flex flex-col gap-4">
+                            <h4 class="font-bold text-sm"><i class="fas fa-play-circle gold-text ml-2"></i> ${l.name}</h4>
                             <div class="grid grid-cols-2 gap-2">
-                                <button onclick="startLearning('${lec.url}', '${lec.name}')" class="bg-gold-text text-black py-2 rounded-lg text-[10px] font-black italic">مشاهدة</button>
-                                ${lec.hasExam ? `<button onclick="location.href='exams.html?id=${child.key}'" class="bg-blue-600 text-white py-2 rounded-lg text-[10px] font-bold">بدء الامتحان</button>` : `<button class="opacity-30 bg-white/5 py-2 rounded-lg text-[10px]" disabled>لا يوجد امتحان</button>`}
+                                <button onclick="startVideo('${l.url}', '${l.name}')" class="bg-gold-text text-black py-2 rounded-lg text-xs font-black">مشاهدة</button>
+                                ${l.hasExam ? `<button onclick="location.href='exams.html?id=${c.key}'" class="bg-blue-600 text-white py-2 rounded-lg text-xs font-bold">الامتحان</button>` : ''}
                             </div>
                         </div>`;
                 });
             });
         }
 
-        // 4. مشغل الفيديو المطور
-        function startLearning(url, title) {
+        // فيديو وعلامة مائية
+        function startVideo(url, title) {
             const player = document.getElementById('player-view');
             const video = document.getElementById('video-engine');
             document.getElementById('playing-title').innerText = title;
@@ -253,110 +217,95 @@
             if (Hls.isSupported() && url.includes('.m3u8')) {
                 const hls = new Hls(); hls.loadSource(url); hls.attachMedia(video);
             } else { video.src = url; }
-            
             video.play();
-            
-            // تسجيل اللوج للمستر
-            db.ref('admin/logs').push({
+
+            // سجل للمستر
+            db.ref('admin/watch_logs').push({
                 student: currentUser.name,
                 phone: userPhone,
                 video: title,
-                date: new Date().toLocaleDateString('ar-EG'),
-                time: new Date().toLocaleTimeString('ar-EG')
+                time: new Date().toLocaleString('ar-EG')
             });
 
-            moveWatermark();
-            window.wmInterval = setInterval(moveWatermark, 4000);
+            moveWM();
+            window.wmInt = setInterval(moveWM, 3000);
         }
 
-        function moveWatermark() {
+        function moveWM() {
             const wm = document.getElementById('watermark-protected');
             const cont = document.getElementById('custom-player-container');
-            const x = Math.random() * (cont.clientWidth - 150);
+            wm.innerText = `${userPhone} | ${currentUser.name}`;
+            const x = Math.random() * (cont.clientWidth - 200);
             const y = Math.random() * (cont.clientHeight - 50);
             wm.style.transform = `translate(${x}px, ${y}px)`;
-            wm.style.color = `rgba(255,255,255,${Math.random() * 0.5 + 0.3})`;
+            wm.style.opacity = Math.random() * 0.5 + 0.3;
         }
 
         function closeVideo() {
-            const video = document.getElementById('video-engine');
-            video.pause(); video.src = "";
+            const v = document.getElementById('video-engine');
+            v.pause(); v.src = "";
             document.getElementById('player-view').classList.add('hidden');
-            clearInterval(window.wmInterval);
+            clearInterval(window.wmInt);
         }
 
-        // 5. وظائف المستر (الأدمن)
+        // وظائف الأدمن
         function toggleAdminView(type) {
-            const view = document.getElementById('admin-data-view');
-            const head = document.getElementById('table-head');
-            const body = document.getElementById('table-body');
-            view.classList.remove('hidden');
-            body.innerHTML = '';
-
-            if (type === 'logs') {
-                head.innerHTML = '<th>الطالب</th><th>الفيديو</th><th>اليوم</th><th>الساعة</th>';
-                db.ref('admin/logs').limitToLast(20).once('value', snap => {
-                    snap.forEach(c => {
-                        const l = c.val();
-                        body.innerHTML = `<tr class="border-b border-white/5"><td>${l.student}</td><td>${l.video}</td><td>${l.date}</td><td>${l.time}</td></tr>` + body.innerHTML;
-                    });
+            const v = document.getElementById('admin-logs-view');
+            const b = document.getElementById('logs-body');
+            v.classList.remove('hidden'); b.innerHTML = '';
+            db.ref('admin/watch_logs').limitToLast(50).once('value', s => {
+                s.forEach(c => {
+                    const l = c.val();
+                    b.innerHTML = `<tr><td class="p-2">${l.student}</td><td class="p-2">${l.video}</td><td class="p-2">${l.time}</td></tr>` + b.innerHTML;
                 });
-            } else if (type === 'requests') {
-                head.innerHTML = '<th>الطالب</th><th>الباقة</th><th>الإجراء</th>';
-                db.ref('purchase_requests').once('value', snap => {
-                    snap.forEach(c => {
-                        const r = c.val();
-                        body.innerHTML += `<tr><td>${r.userName}</td><td>${r.pkgName}</td><td>
-                            <button onclick="approve('${c.key}', '${r.userPhone}', '${r.pkgId}')" class="text-green-500 ml-2">قبول</button>
-                            <button onclick="db.ref('purchase_requests/${c.key}').remove()" class="text-red-500">رفض</button>
-                        </td></tr>`;
-                    });
-                });
-            }
+            });
         }
 
         function savePackage() {
-            const data = {
-                name: document.getElementById('pkg-name').value,
-                price: document.getElementById('pkg-price').value,
-                desc: document.getElementById('pkg-desc').value
-            };
-            db.ref('packages').push(data).then(() => { toggleModal('pkg-modal'); loadPackages(); });
+            const n = document.getElementById('p-name').value;
+            const p = document.getElementById('p-price').value;
+            if(n && p) db.ref('packages').push({name:n, price:p}).then(() => { toggleModal('pkg-modal'); loadPackages(); });
         }
 
         function openLecModal() {
-            const sel = document.getElementById('target-pkg');
-            sel.innerHTML = '';
-            db.ref('packages').once('value', s => {
-                s.forEach(p => { sel.innerHTML += `<option value="${p.key}">${p.val().name}</option>`; });
+            const s = document.getElementById('l-target'); s.innerHTML = '';
+            db.ref('packages').once('value', snap => {
+                snap.forEach(p => s.innerHTML += `<option value="${p.key}">${p.val().name}</option>`);
                 toggleModal('lec-modal');
             });
         }
 
         function saveLecture() {
-            const pkgId = document.getElementById('target-pkg').value;
+            const id = document.getElementById('l-target').value;
             const data = {
-                name: document.getElementById('lec-name').value,
-                url: document.getElementById('lec-url').value,
-                hasExam: document.getElementById('has-exam').checked
+                name: document.getElementById('l-name').value,
+                url: document.getElementById('l-url').value,
+                hasExam: document.getElementById('l-exam').checked
             };
-            db.ref(`lectures/${pkgId}`).push(data).then(() => toggleModal('lec-modal'));
+            db.ref(`lectures/${id}`).push(data).then(() => toggleModal('lec-modal'));
         }
 
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+        function showToast(m) {
+            const t = document.getElementById('toast'); t.innerText = m;
+            t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000);
         }
 
         function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
         function logout() { localStorage.removeItem('userLoggedIn'); location.href='go.html'; }
 
-        // حماية Console
-        setInterval(() => {
-            if (window.outerHeight - window.innerHeight > 160) document.body.innerHTML = "Security Check: Please close DevTools.";
-        }, 1000);
+        // حماية Console (النسخة المستقرة)
+        (function() {
+            let devtools = function() {};
+            devtools.toString = function() {
+                db.ref(`security_alerts/${userPhone}`).set({
+                    name: currentUser.name,
+                    reason: "حاولة فتح Console",
+                    time: new Date().toLocaleString()
+                });
+                return "";
+            };
+            console.log("%c", devtools);
+        }());
     </script>
 </body>
 </html>
