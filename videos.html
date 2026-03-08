@@ -131,6 +131,7 @@
         let currentUser = null;
         let editingPkgId = null;
         let editingLecId = null;
+        let currentOpenPkgId = null; // متغير جديد لتتبع حالة العرض
 
         // Core Real-time Sync
         db.ref('students/' + userPhone).on('value', (snap) => {
@@ -140,13 +141,17 @@
             document.getElementById('user-wallet').innerText = currentUser.balance || 0;
             if (currentUser.role === 'admin') document.getElementById('admin-panel').classList.remove('hidden');
             
-            // تحديث الواجهة فقط إذا كنا في عرض الباقات
-            if (document.getElementById('back-btn').classList.contains('hidden')) {
+            // التحديث الذكي: لا يتم إعادة التحميل للصفحة الرئيسية إلا إذا لم يكن هناك باقة مفتوحة حالياً
+            if (!currentOpenPkgId) {
                 loadPackages();
+            } else {
+                // إذا كان داخل باقة، نقوم فقط بتحديث الأزرار داخل الشبكة دون تصفيرها بالكامل
+                updateCurrentView();
             }
         });
 
         function loadPackages() {
+            currentOpenPkgId = null; // تصفير الحالة
             document.getElementById('back-btn').classList.add('hidden');
             document.getElementById('view-title').innerText = "الدورات التدريبية";
             document.getElementById('view-desc').innerText = "اختر الباقة المناسبة لبدء التعلم";
@@ -203,6 +208,7 @@
         }
 
         function loadLectures(pkgId, pkgName, pkgDesc) {
+            currentOpenPkgId = pkgId; // تعيين المعرف الحالي لمنع القفز في التحديث
             document.getElementById('back-btn').classList.remove('hidden');
             document.getElementById('view-title').innerText = pkgName;
             document.getElementById('view-desc').innerText = pkgDesc;
@@ -233,6 +239,14 @@
                         </div>`;
                 });
             });
+        }
+
+        function updateCurrentView() {
+            if (currentOpenPkgId) {
+                const title = document.getElementById('view-title').innerText;
+                const desc = document.getElementById('view-desc').innerText;
+                loadLectures(currentOpenPkgId, title, desc);
+            }
         }
 
         // Video Controller
@@ -316,11 +330,10 @@
             };
             const ref = (editingLecId && editingLecId.lecId) ? db.ref(`lectures/${editingLecId.pkgId}/${editingLecId.lecId}`) : db.ref(`lectures/${pkgId}`).push();
             ref.set(data).then(() => { 
-                const oldPkgId = editingLecId ? editingLecId.pkgId : pkgId;
                 editingLecId = null; 
                 toggleModal('lec-modal'); 
                 showToast("تم الحفظ!");
-                loadLectures(oldPkgId, document.getElementById('view-title').innerText, document.getElementById('view-desc').innerText);
+                loadLectures(pkgId, document.getElementById('view-title').innerText, document.getElementById('view-desc').innerText);
             });
         }
 
