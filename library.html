@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الأستاذ أحمد شعبان | المذكرات الرقمية</title>
+    <title>مكتبة الأستاذ أحمد شعبان | المذكرات </title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --primary: #d4af37; --bg: #050505; --card-bg: rgba(255, 255, 255, 0.03); --gold: #d4af37; }
-        body { background: var(--bg); color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 20px; }
+        body { background: var(--bg); color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 20px; overflow-x: hidden; }
         .container { max-width: 500px; margin: 40px auto; text-align: center; }
         
-        /* شريط المحفظة بنفس ستايل المنصة */
+        /* ستايل المحفظة */
         .wallet-box {
             background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold);
             padding: 10px 20px; border-radius: 15px; color: var(--gold);
@@ -25,7 +25,7 @@
         }
         input { 
             width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; 
-            border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box;
+            border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; font-family: 'Cairo';
         }
         .btn-post { 
             width: 100%; padding: 12px; background: var(--primary); border: none; 
@@ -35,15 +35,29 @@
         .memo-card {
             background: var(--card-bg); border: 1px solid rgba(212, 175, 55, 0.1); padding: 40px 20px;
             border-radius: 30px; display: none; position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
         }
         .memo-title { font-size: 1.8rem; color: var(--primary); font-weight: 900; margin-bottom: 5px; }
         
-        .download-btn {
+        .action-btn {
             display: flex; align-items: center; justify-content: center; gap: 10px;
             background: var(--primary); color: #000; text-decoration: none;
             padding: 15px; border-radius: 15px; font-weight: 900; transition: 0.3s;
+            cursor: pointer; border: none; width: 100%; font-family: 'Cairo';
         }
+
+        /* نافذة العرض Iframe */
+        .viewer-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.98); z-index: 9999; display: none;
+            flex-direction: column;
+        }
+        .viewer-header {
+            padding: 15px; display: flex; justify-content: space-between; align-items: center;
+            background: #111; border-bottom: 1px solid var(--gold);
+        }
+        iframe { width: 100%; height: 100%; border: none; }
+        .close-viewer { color: #fff; font-size: 1.5rem; cursor: pointer; }
         
         .del-btn { color: #ff4d4d; font-size: 0.8rem; cursor: pointer; margin-top: 20px; display: inline-block; }
     </style>
@@ -59,26 +73,28 @@
         </div>
     </div>
 
-    <h1 style="color: var(--primary); margin-bottom: 30px;">المكتبة الرقمية ⚜️</h1>
+    <h1 style="color: var(--primary); margin-bottom: 10px;">المكتبة الرقمية ⚜️</h1>
+    <p style="opacity: 0.5; font-size: 0.8rem; margin-bottom: 30px;">تفتح المذكرات مجاناً للمشتركين في أي كورس</p>
 
     <div class="admin-zone" id="admin-zone">
-        <p style="margin-top:0;">إضافة مذكرة (Google Drive)</p>
-        <input type="text" id="inp-title" placeholder="عنوان المذكرة">
-        <input type="text" id="inp-url" placeholder="رابط الملف">
-        <button class="btn-post" onclick="saveMemo()">تحديث المكتبة الآن</button>
+        <p style="margin-top:0; color: var(--gold);">إضافة مذكرة جديدة</p>
+        <input type="text" id="inp-title" placeholder="اسم المذكرة">
+        <input type="text" id="inp-url" placeholder="رابط Google Drive">
+        <button class="btn-post" onclick="uploadMemo()">رفع المذكرة للمكتبة</button>
     </div>
 
-    <div id="memo-box">
-        <div class="memo-card" id="memo-card">
-            <div class="memo-title" id="title-text"></div>
-            <div style="opacity: 0.6; margin-bottom: 25px;">نسخة PDF أصلية - الأستاذ أحمد شعبان</div>
-            <a href="#" id="file-link" class="download-btn" target="_blank">
-                <i class="fas fa-eye"></i> عرض المذكرة الآن
-            </a>
-            <span class="del-btn" id="del-btn" onclick="deleteMemo()" style="display:none;">حذف المذكرة</span>
+    <div id="memos-container">
         </div>
-        <p id="empty-msg" style="opacity: 0.4;">لا توجد مذكرات متاحة حالياً</p>
+    
+    <p id="empty-msg" style="display:none; opacity: 0.4;">لا توجد مذكرات متاحة حالياً</p>
+</div>
+
+<div class="viewer-overlay" id="viewer-overlay">
+    <div class="viewer-header">
+        <span id="viewer-title" style="color: var(--gold); font-weight: bold;">جاري العرض...</span>
+        <i class="fas fa-times close-viewer" onclick="closeViewer()"></i>
     </div>
+    <iframe id="pdf-frame" src=""></iframe>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -97,65 +113,126 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // جلب البيانات من LocalStorage كما في المنصة
     const userPhone = localStorage.getItem('userLoggedIn');
-    const userName = localStorage.getItem('userName');
+    let currentBalance = 0;
+    let hasAnyCourse = false;
+    let isAdmin = false;
 
     if (!userPhone) {
-        window.location.href = "go.html"; // التوجيه لصفحة الدخول إذا لم يسجل
+        window.location.href = "go.html";
     } else {
-        // الربط مع مسار الطلاب الصحيح 'students/'
-        db.ref('students/' + userPhone).on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                // تحديث الاسم والرصيد
-                document.getElementById('welcome-msg').innerText = "يا أهلاً، " + data.name.split(' ')[0];
-                document.getElementById('user-balance').innerText = (data.balance || 0).toLocaleString();
+        // 1. مراقبة بيانات الطالب والاشتراكات
+        db.ref('students/' + userPhone).on('value', (snap) => {
+            const user = snap.val();
+            if (user) {
+                currentBalance = user.balance || 0;
+                isAdmin = user.role === 'admin' || userPhone === "01025768529";
+                document.getElementById('welcome-msg').innerText = "يا أهلاً، " + user.name.split(' ')[0];
+                document.getElementById('user-balance').innerText = currentBalance.toLocaleString();
 
-                // التحقق من صلاحية الأدمن
-                if (data.role === "admin" || userPhone === "01025768529") {
-                    document.getElementById('admin-zone').style.display = 'block';
+                // فحص إذا كان مشتركاً في أي كورس (وجود قيمة true في قائمة الكورسات)
+                hasAnyCourse = false;
+                if (user.courses) {
+                    Object.values(user.courses).forEach(status => {
+                        if (status === true) hasAnyCourse = true;
+                    });
                 }
+
+                if (isAdmin) {
+                    document.getElementById('admin-zone').style.display = 'block';
+                    hasAnyCourse = true; 
+                }
+                
+                loadLibrary(); // إعادة تحميل المذكرات لتحديث الأزرار بناءً على الحالة الجديدة
             }
         });
     }
 
-    function saveMemo() {
+    // 2. جلب المذكرات من المسار الجديد 'library'
+    function loadLibrary() {
+        db.ref('library').on('value', (snap) => {
+            const container = document.getElementById('memos-container');
+            container.innerHTML = '';
+            
+            if (!snap.exists()) {
+                document.getElementById('empty-msg').style.display = 'block';
+                return;
+            }
+            document.getElementById('empty-msg').style.display = 'none';
+
+            snap.forEach((child) => {
+                const memo = child.val();
+                const memoId = child.key;
+                
+                // تحديد حالة الزر (فتح أم شراء)
+                let actionHtml = '';
+                if (hasAnyCourse) {
+                    actionHtml = `<button class="action-btn" onclick="openViewer('${memo.url}', '${memo.title}')"><i class="fas fa-eye"></i> عرض المذكرة (مجاناً)</button>`;
+                } else {
+                    actionHtml = `<button class="action-btn" onclick="buyMemo('${memoId}')"><i class="fas fa-shopping-cart"></i> شراء المذكرة (50 ج)</button>`;
+                }
+
+                container.innerHTML += `
+                    <div class="memo-card">
+                        <div class="memo-title">${memo.title}</div>
+                        <div style="opacity: 0.6; margin-bottom: 20px; font-size: 0.9rem;">نسخة رقمية - الأستاذ أحمد شعبان</div>
+                        ${actionHtml}
+                        ${isAdmin ? `<span class="del-btn" onclick="deleteMemo('${memoId}')">حذف المذكرة</span>` : ''}
+                    </div>
+                `;
+            });
+        });
+    }
+
+    // 3. شراء المذكرة
+    function buyMemo(id) {
+        if (currentBalance >= 50) {
+            if (confirm("سيتم خصم 50 جنيهاً لفتح هذه المذكرة لأنك غير مشترك في أي كورس حالياً. هل توافق؟")) {
+                db.ref('students/' + userPhone).update({
+                    balance: currentBalance - 50,
+                    // نعتبر المذكرة كـ "كورس" داخلي لفتحها دائماً لهذا الطالب
+                    [`courses/memo_${id}`]: true 
+                }).then(() => alert("تم الشراء بنجاح!"));
+            }
+        } else {
+            alert("رصيدك لا يكفي (50 ج.م). اشحن محفظتك أو اشترك في كورس لتفتحها مجاناً.");
+        }
+    }
+
+    // 4. عرض المذكرة داخل الموقع
+    function openViewer(url, title) {
+        let finalUrl = url;
+        if (finalUrl.includes('drive.google.com')) {
+            let fileId = (finalUrl.includes('/d/')) ? finalUrl.split('/d/')[1].split('/')[0] : finalUrl.split('id=')[1].split('&')[0];
+            finalUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+        }
+        document.getElementById('viewer-title').innerText = title;
+        document.getElementById('pdf-frame').src = finalUrl;
+        document.getElementById('viewer-overlay').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeViewer() {
+        document.getElementById('viewer-overlay').style.display = 'none';
+        document.getElementById('pdf-frame').src = "";
+        document.body.style.overflow = 'auto';
+    }
+
+    // 5. وظائف الأدمن
+    function uploadMemo() {
         const t = document.getElementById('inp-title').value;
         const u = document.getElementById('inp-url').value;
-        if(t && u) {
-            db.ref('activeMemo').set({ title: t, url: u }).then(() => {
-                alert("تم التحديث!");
-                document.getElementById('inp-title').value = "";
-                document.getElementById('inp-url').value = "";
+        if (t && u) {
+            db.ref('library').push({ title: t, url: u }).then(() => {
+                alert("تمت الإضافة للمكتبة");
+                document.getElementById('inp-title').value = '';
+                document.getElementById('inp-url').value = '';
             });
         }
     }
 
-    db.ref('activeMemo').on('value', (s) => {
-        const d = s.val();
-        if(d && d.title) {
-            document.getElementById('empty-msg').style.display = 'none';
-            document.getElementById('memo-card').style.display = 'block';
-            document.getElementById('title-text').innerText = d.title;
-
-            let finalUrl = d.url;
-            if (finalUrl.includes('drive.google.com')) {
-                let fileId = (finalUrl.includes('/d/')) ? finalUrl.split('/d/')[1].split('/')[0] : finalUrl.split('id=')[1].split('&')[0];
-                finalUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-            }
-            document.getElementById('file-link').href = finalUrl;
-            
-            // إظهار زر الحذف للأدمن فقط
-            if (userPhone === "01025768529") document.getElementById('del-btn').style.display = 'inline-block';
-        } else {
-            document.getElementById('memo-card').style.display = 'none';
-            document.getElementById('empty-msg').style.display = 'block';
-        }
-    });
-
-    function deleteMemo() {
-        if(confirm("حذف المذكرة؟")) db.ref('activeMemo').remove();
+    function deleteMemo(id) {
+        if (confirm("حذف المذكرة نهائياً؟")) db.ref('library/' + id).remove();
     }
 </script>
 </body>
