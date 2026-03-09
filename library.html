@@ -1,37 +1,103 @@
-           background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold);
-            padding: 10px 20px; border-radius: 15px; color: var(--gold);
-            font-weight: 900; display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 25px; font-size: 1rem;
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المكتبة الرقمية | الأستاذ أحمد شعبان</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #d4af37;
+            --gold: #d4af37;
+            --card-bg: #1a1a1a;
+        }
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .wallet-box {
+            background: rgba(212, 175, 55, 0.1); 
+            border: 1px solid var(--gold);
+            padding: 10px 20px; 
+            border-radius: 15px; 
+            color: var(--gold);
+            font-weight: 900; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            margin-bottom: 25px; 
+            font-size: 1rem;
         }
 
         .admin-zone { 
-            background: #111; padding: 20px; border-radius: 20px; 
-            border: 1px dashed var(--primary); display: none; margin-bottom: 30px;
+            background: #111; 
+            padding: 20px; 
+            border-radius: 20px; 
+            border: 1px dashed var(--primary); 
+            display: none; 
+            margin-bottom: 30px;
         }
         input { 
-            width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; 
-            border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; font-family: 'Cairo';
+            width: 100%; 
+            padding: 12px; 
+            margin: 8px 0; 
+            border-radius: 10px; 
+            border: 1px solid #333; 
+            background: #000; 
+            color: #fff; 
+            box-sizing: border-box; 
+            font-family: 'Cairo';
         }
         .btn-post { 
-            width: 100%; padding: 12px; background: var(--primary); border: none; 
-            border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px;
+            width: 100%; 
+            padding: 12px; 
+            background: var(--primary); 
+            border: none; 
+            border-radius: 10px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 10px;
         }
 
+        /* تعديل كلاس الكارت لضمان الظهور */
         .memo-card {
-            background: var(--card-bg); border: 1px solid rgba(212, 175, 55, 0.1); padding: 40px 20px;
-            border-radius: 30px; display: none; position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
+            background: var(--card-bg); 
+            border: 1px solid rgba(212, 175, 55, 0.1); 
+            padding: 40px 20px;
+            border-radius: 30px; 
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            margin-bottom: 20px;
+            display: block !important; /* لضمان عدم الاختفاء */
         }
         .memo-title { font-size: 1.8rem; color: var(--primary); font-weight: 900; margin-bottom: 5px; }
         
         .action-btn {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            background: var(--primary); color: #000; text-decoration: none;
-            padding: 15px; border-radius: 15px; font-weight: 900; transition: 0.3s;
-            cursor: pointer; border: none; width: 100%; font-family: 'Cairo';
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px;
+            background: var(--primary); 
+            color: #000; 
+            text-decoration: none;
+            padding: 15px; 
+            border-radius: 15px; 
+            font-weight: 900; 
+            transition: 0.3s;
+            cursor: pointer; 
+            border: none; 
+            width: 100%; 
+            font-family: 'Cairo';
         }
 
-        /* نافذة العرض Iframe */
         .viewer-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.98); z-index: 9999; display: none;
@@ -44,7 +110,14 @@
         iframe { width: 100%; height: 100%; border: none; }
         .close-viewer { color: #fff; font-size: 1.5rem; cursor: pointer; }
         
-        .del-btn { color: #ff4d4d; font-size: 0.8rem; cursor: pointer; margin-top: 20px; display: inline-block; }
+        .del-btn { 
+            color: #ff4d4d; 
+            font-size: 0.8rem; 
+            cursor: pointer; 
+            margin-top: 20px; 
+            display: inline-block; 
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -62,16 +135,15 @@
     <p style="opacity: 0.5; font-size: 0.8rem; margin-bottom: 30px;">تفتح المذكرات مجاناً للمشتركين في أي كورس</p>
 
     <div class="admin-zone" id="admin-zone">
-        <p style="margin-top:0; color: var(--gold);">إضافة مذكرة جديدة</p>
+        <p style="margin-top:0; color: var(--gold); font-weight: bold;">إضافة مذكرة جديدة (لوحة الإدارة)</p>
         <input type="text" id="inp-title" placeholder="اسم المذكرة">
         <input type="text" id="inp-url" placeholder="رابط Google Drive">
         <button class="btn-post" onclick="uploadMemo()">رفع المذكرة للمكتبة</button>
     </div>
 
-    <div id="memos-container">
-        </div>
+    <div id="memos-container"></div>
     
-    <p id="empty-msg" style="display:none; opacity: 0.4;">لا توجد مذكرات متاحة حالياً</p>
+    <p id="empty-msg" style="display:none; text-align: center; opacity: 0.4; margin-top: 50px;">لا توجد مذكرات متاحة حالياً</p>
 </div>
 
 <div class="viewer-overlay" id="viewer-overlay">
@@ -84,8 +156,8 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
 <script>
-    // إعدادات Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyBfkxj5I7UOEETOf9GRqGgqEaEoqPtPMek",
         authDomain: "mrahmed-925d8.firebaseapp.com",
@@ -106,18 +178,16 @@
     if (!userPhone) {
         window.location.href = "go.html";
     } else {
-        // 1. مراقبة بيانات الطالب والاشتراكات في الوقت الفعلي
+        // 1. مراقبة بيانات المستخدم والاشتراكات
         db.ref('students/' + userPhone).on('value', (snap) => {
             const user = snap.val();
             if (user) {
                 currentBalance = user.balance || 0;
-                // تحديد إذا كان المستخدم أدمن
                 isAdmin = user.role === 'admin' || userPhone === "01025768529";
                 
                 document.getElementById('welcome-msg').innerText = "يا أهلاً، " + user.name.split(' ')[0];
                 document.getElementById('user-balance').innerText = currentBalance.toLocaleString();
 
-                // فحص إذا كان الطالب مشتركاً في أي كورس لفتح المكتبة مجاناً
                 hasAnyCourse = false;
                 if (user.courses) {
                     Object.values(user.courses).forEach(status => {
@@ -125,23 +195,22 @@
                     });
                 }
 
-                // الأدمن دائماً لديه صلاحية الوصول للمحتوى
                 if (isAdmin) {
                     document.getElementById('admin-zone').style.display = 'block';
                     hasAnyCourse = true; 
                 }
                 
-                loadLibrary(); // استدعاء جلب المذكرات
+                loadLibrary();
             }
         });
     }
 
-    // 2. جلب المذكرات وعرضها برمجياً
+    // 2. جلب وعرض المذكرات من Firebase
     function loadLibrary() {
         const container = document.getElementById('memos-container');
         
         db.ref('library').on('value', (snap) => {
-            container.innerHTML = ''; // مسح الحاوية قبل التحديث
+            container.innerHTML = '';
             
             if (!snap.exists()) {
                 document.getElementById('empty-msg').style.display = 'block';
@@ -155,7 +224,6 @@
                 const memoId = child.key;
                 
                 let actionHtml = '';
-                // إذا كان مشتركاً أو أدمن يظهر زر العرض، غير ذلك يظهر زر الشراء
                 if (hasAnyCourse || isAdmin) {
                     actionHtml = `
                         <button class="action-btn" onclick="openViewer('${memo.url}', '${memo.title}')">
@@ -168,39 +236,35 @@
                         </button>`;
                 }
 
-                // إضافة المذكرة مع التأكد من خاصية العرض (block) لإصلاح مشكلة الاختفاء
                 container.innerHTML += `
-                    <div class="memo-card" style="display: block !important; opacity: 1; visibility: visible;">
+                    <div class="memo-card" style="display: block !important; opacity: 1;">
                         <div class="memo-title">${memo.title}</div>
                         <div style="opacity: 0.6; margin-bottom: 20px; font-size: 0.9rem;">نسخة رقمية - الأستاذ أحمد شعبان</div>
                         ${actionHtml}
-                        ${isAdmin ? `<span class="del-btn" onclick="deleteMemo('${memoId}')" style="cursor:pointer; color:#ff4d4d; display:block; margin-top:15px; font-size:0.8rem;">حذف المذكرة نهائياً</span>` : ''}
+                        ${isAdmin ? `<span class="del-btn" onclick="deleteMemo('${memoId}')">حذف المذكرة نهائياً</span>` : ''}
                     </div>
                 `;
             });
         });
     }
 
-    // 3. شراء المذكرة لغير المشتركين في الكورسات
+    // 3. نظام الشراء المباشر للمذكرة
     function buyMemo(id) {
         if (currentBalance >= 50) {
-            if (confirm("سيتم خصم 50 جنيهاً من رصيدك لفتح هذه المذكرة. هل تريد الاستمرار؟")) {
+            if (confirm("هل تريد خصم 50 جنيهاً من رصيدك لفتح المذكرة؟")) {
                 db.ref('students/' + userPhone).update({
                     balance: currentBalance - 50,
-                    [`courses/memo_${id}`]: true // تسجيل شراء المذكرة كاشتراك
-                }).then(() => {
-                    alert("تم الشراء بنجاح! يمكنك الآن عرض المذكرة.");
-                });
+                    [`courses/memo_${id}`]: true 
+                }).then(() => alert("تم الشراء! يمكنك الآن قراءة المذكرة."));
             }
         } else {
-            alert("عذراً، رصيدك الحالي لا يكفي (تحتاج 50 ج.م).");
+            alert("رصيدك غير كافٍ. يرجى شحن المحفظة أولاً.");
         }
     }
 
-    // 4. مشغل عرض الملفات (Iframe)
+    // 4. معالج عرض الروابط
     function openViewer(url, title) {
         let finalUrl = url;
-        // تحويل روابط Google Drive العادية إلى روابط معاينة (Preview)
         if (finalUrl.includes('drive.google.com')) {
             let fileId = "";
             if (finalUrl.includes('/d/')) {
@@ -214,7 +278,7 @@
         document.getElementById('viewer-title').innerText = title;
         document.getElementById('pdf-frame').src = finalUrl;
         document.getElementById('viewer-overlay').style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // منع التمرير في الخلفية
+        document.body.style.overflow = 'hidden';
     }
 
     function closeViewer() {
@@ -223,7 +287,7 @@
         document.body.style.overflow = 'auto';
     }
 
-    // 5. وظائف الإدارة (الأدمن)
+    // 5. وظائف التحكم (للأدمن فقط)
     function uploadMemo() {
         const t = document.getElementById('inp-title').value;
         const u = document.getElementById('inp-url').value;
@@ -233,25 +297,18 @@
                 url: u,
                 createdAt: new Date().toISOString()
             }).then(() => {
-                alert("تمت إضافة المذكرة بنجاح إلى المكتبة");
+                alert("تم الإضافة بنجاح!");
                 document.getElementById('inp-title').value = '';
                 document.getElementById('inp-url').value = '';
-            }).catch(err => {
-                alert("خطأ أثناء الإضافة: " + err.message);
             });
-        } else {
-            alert("يرجى ملء جميع الحقول المطلوبة.");
         }
     }
 
     function deleteMemo(id) {
-        if (confirm("هل أنت متأكد من حذف هذه المذكرة نهائياً من المكتبة؟")) {
-            db.ref('library/' + id).remove().then(() => {
-                alert("تم الحذف.");
-            });
+        if (confirm("هل أنت متأكد من الحذف؟")) {
+            db.ref('library/' + id).remove();
         }
     }
 </script>
 </body>
 </html>
-
