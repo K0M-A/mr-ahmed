@@ -66,29 +66,50 @@
         .edit-btn { color: #4dabff; cursor: pointer; font-size: 0.85rem; }
         .del-btn { color: #ff4d4d; cursor: pointer; font-size: 0.85rem; }
 
-        /* شاشة العرض */
+        /* شاشة العرض المعدلة */
         .viewer-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999; display: none; flex-direction: column;
         }
         .viewer-header {
             padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;
-            background: #111; border-bottom: 1px solid #222;
+            background: #111; border-bottom: 1px solid #222; z-index: 10002;
         }
 
         .iframe-container {
-            position: relative; flex-grow: 1; overflow: hidden;
-            display: flex; justify-content: center;
+            position: relative; flex-grow: 1; 
+            overflow-y: auto; overflow-x: hidden; /* تفعيل السكرول هنا */
+            display: block; background: #1a1a1a;
+            -webkit-overflow-scrolling: touch;
         }
 
-        /* حماية المذكرة */
+        #pdf-frame { 
+            width: 100%; height: 10000px; /* طول كبير لفك سكرول الدرايف */
+            border: none; transition: transform 0.2s ease; transform-origin: top center; 
+        }
+
+        /* حماية المذكرة والعلامة المائية */
         .protection-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 5; background: transparent;
         }
+        
+        /* العلامة المائية العائمة الذكية */
+        .watermark-float {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10001;
+            color: rgba(212, 175, 55, 0.15); /* لون ذهبي شفاف جداً */
+            font-size: 1.5rem;
+            font-weight: bold;
+            white-space: nowrap;
+            user-select: none;
+            display: none;
+        }
+
         .anti-steal-home {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 6rem; color: rgba(212, 175, 55, 0.07); cursor: pointer; z-index: 6;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 6rem; color: rgba(212, 175, 55, 0.05); cursor: pointer; z-index: 4;
         }
 
         /* أدوات التحكم العائمة */
@@ -97,18 +118,18 @@
             flex-direction: column; gap: 15px; z-index: 10000;
         }
         .tool-btn {
-            width: 50px; height: 50px; background: rgba(212, 175, 55, 0.9);
+            width: 50px; height: 50px; background: var(--primary);
             color: #000; border-radius: 50%; display: flex; align-items: center;
             justify-content: center; cursor: pointer; font-size: 1.2rem;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: none;
         }
 
-        #pdf-frame { width: 100%; height: 100%; border: none; transition: transform 0.2s ease; transform-origin: top center; }
-
         .close-v { background: #222; color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     </style>
 </head>
 <body oncontextmenu="return false;">
+
+<div id="user-watermark" class="watermark-float"></div>
 
 <div class="container">
     <div class="wallet-box">
@@ -137,11 +158,11 @@
 <div class="viewer-overlay" id="viewer-overlay">
     <div class="viewer-header">
         <div class="close-v" onclick="closeViewer()"><i class="fas fa-times"></i></div>
-        <span id="viewer-title" style="color: var(--primary); font-size: 0.9rem;">عرض المذكرة</span>
+        <span id="viewer-title" style="color: var(--primary); font-weight: bold;">عرض المذكرة</span>
         <div style="width:35px"></div>
     </div>
 
-    <div class="iframe-container" id="scroll-area">
+    <div class="iframe-container" id="scroll-wrapper">
         <div class="protection-layer"></div>
         <a href="index.html" class="anti-steal-home"><i class="fas fa-home"></i></a>
         <iframe id="pdf-frame" src=""></iframe>
@@ -150,8 +171,8 @@
     <div class="floating-tools">
         <button class="tool-btn" onclick="zoomPDF(0.1)" title="تكبير"><i class="fas fa-search-plus"></i></button>
         <button class="tool-btn" onclick="zoomPDF(-0.1)" title="تصغير"><i class="fas fa-search-minus"></i></button>
-        <button class="tool-btn" onclick="scrollPDF(-200)" title="لأعلى"><i class="fas fa-chevron-up"></i></button>
-        <button class="tool-btn" onclick="scrollPDF(200)" title="لأسفل"><i class="fas fa-chevron-down"></i></button>
+        <button class="tool-btn" onclick="smoothScroll(400)" title="لأسفل"><i class="fas fa-chevron-down"></i></button>
+        <button class="tool-btn" onclick="smoothScroll(-400)" title="لأعلى"><i class="fas fa-chevron-up"></i></button>
     </div>
 </div>
 
@@ -172,7 +193,7 @@
     const db = firebase.database();
 
     const userPhone = localStorage.getItem('userLoggedIn');
-    let currentBalance = 0, isAdmin = false, currentZoom = 1;
+    let currentBalance = 0, isAdmin = false, currentZoom = 1, userName = "";
 
     if (!userPhone) { window.location.href = "go.html"; }
 
@@ -180,12 +201,16 @@
     db.ref('students/' + userPhone).on('value', (snap) => {
         const user = snap.val();
         if (user) {
+            userName = user.name;
             currentBalance = user.balance || 0;
             isAdmin = user.role === 'admin' || userPhone === "01025768529";
             document.getElementById('welcome-msg').innerText = "يا أهلاً، " + user.name.split(' ')[0];
             document.getElementById('user-balance').innerText = currentBalance.toLocaleString();
             if (isAdmin) document.getElementById('admin-zone').style.display = 'block';
             loadLibrary(user.courses || {});
+            
+            // تحديث محتوى العلامة المائية
+            document.getElementById('user-watermark').innerText = `${userName} - ${userPhone}`;
         }
     });
 
@@ -217,33 +242,73 @@
         });
     }
 
-    // وظائف العرض والتحكم
+    // وظائف العرض والتحكم الجديدة
     function openViewer(url, title) {
-        let fileId = url.includes('/d/') ? url.split('/d/')[1].split('/')[0] : url.split('id=')[1].split('&')[0];
+        let fileId = "";
+        if (url.includes('/d/')) {
+            fileId = url.split('/d/')[1].split('/')[0];
+        } else if (url.includes('id=')) {
+            fileId = url.split('id=')[1].split('&')[0];
+        }
+
         document.getElementById('pdf-frame').src = `https://drive.google.com/file/d/${fileId}/preview`;
         document.getElementById('viewer-title').innerText = title;
         document.getElementById('viewer-overlay').style.display = 'flex';
         document.body.style.overflow = 'hidden';
+
+        // تفعيل العلامة المائية المتحركة
+        startWatermark();
+
+        // إعادة ضبط السكرول والزووم
+        const wrapper = document.getElementById('scroll-wrapper');
+        wrapper.scrollTop = 0;
         currentZoom = 1;
-        document.getElementById('pdf-frame').style.transform = `scale(${currentZoom})`;
+        document.getElementById('pdf-frame').style.transform = `scale(1)`;
+        document.getElementById('pdf-frame').style.width = "100%";
     }
 
     function closeViewer() {
         document.getElementById('viewer-overlay').style.display = 'none';
         document.getElementById('pdf-frame').src = '';
         document.body.style.overflow = 'auto';
+        stopWatermark();
     }
 
-    function scrollPDF(amount) {
-        const container = document.getElementById('scroll-area');
-        container.scrollBy({ top: amount, behavior: 'smooth' });
+    function smoothScroll(amount) {
+        const wrapper = document.getElementById('scroll-wrapper');
+        wrapper.scrollBy({ top: amount, behavior: 'smooth' });
     }
 
     function zoomPDF(change) {
         currentZoom += change;
-        if (currentZoom < 0.5) currentZoom = 0.5;
-        if (currentZoom > 2) currentZoom = 2;
-        document.getElementById('pdf-frame').style.transform = `scale(${currentZoom})`;
+        if (currentZoom < 0.6) currentZoom = 0.6;
+        if (currentZoom > 2.5) currentZoom = 2.5;
+        
+        const frame = document.getElementById('pdf-frame');
+        frame.style.transform = `scale(${currentZoom})`;
+        frame.style.width = (100 / currentZoom) + "%";
+    }
+
+    // نظام العلامة المائية العائمة المتحركة
+    let watermarkInterval;
+    function startWatermark() {
+        const wm = document.getElementById('user-watermark');
+        wm.style.display = 'block';
+        
+        function moveWM() {
+            const x = Math.random() * (window.innerWidth - 200);
+            const y = Math.random() * (window.innerHeight - 50);
+            wm.style.left = x + 'px';
+            wm.style.top = y + 'px';
+        }
+        
+        moveWM();
+        watermarkInterval = setInterval(moveWM, 4000); // تتحرك كل 4 ثواني لمكان جديد
+    }
+
+    function stopWatermark() {
+        document.getElementById('user-watermark').style.display = 'none';
+        clearInterval(watermarkInterval);
     }
 
     // وظائف الإدارة
@@ -258,9 +323,11 @@
             const ref = editId ? db.ref('library/' + editId) : db.ref('library').push();
             
             ref.set(data).then(() => {
-                alert(editId ? "تم التعديل!" : "تم النشر!");
+                alert(editId ? "تم التعديل بنجاح!" : "تم نشر المذكرة!");
                 resetForm();
             });
+        } else {
+            alert("يرجى ملء العنوان والرابط!");
         }
     }
 
@@ -281,23 +348,29 @@
         document.getElementById('inp-desc').value = '';
         document.getElementById('inp-url').value = '';
         document.getElementById('form-title').innerText = "إضافة مذكرة جديدة";
-        document.getElementById('btn-save').innerText = "نشر المذكرة الآن";
+        document.getElementById('btn-save').innerText = "نشر المذكرة";
         document.getElementById('btn-cancel').style.display = "none";
     }
 
     function deleteMemo(id) {
-        if (confirm("حذف نهائي؟")) db.ref('library/' + id).remove();
+        if (confirm("هل أنت متأكد من حذف هذه المذكرة نهائياً؟")) {
+            db.ref('library/' + id).remove();
+        }
     }
 
     function buyMemo(id) {
         if (currentBalance >= 50) {
-            if (confirm("خصم 50 جنيهاً لفتح المذكرة؟")) {
+            if (confirm("هل تريد شراء هذه المذكرة مقابل 50 جنيهاً؟")) {
                 db.ref('students/' + userPhone).update({
                     balance: currentBalance - 50,
                     [`courses/memo_${id}`]: true 
+                }).then(() => {
+                    alert("تم الشراء بنجاح! يمكنك الآن فتح المذكرة.");
                 });
             }
-        } else { alert("الرصيد غير كافٍ!"); }
+        } else { 
+            alert("رصيدك الحالي (" + currentBalance + ") لا يكفي لشراء المذكرة."); 
+        }
     }
 </script>
 </body>
