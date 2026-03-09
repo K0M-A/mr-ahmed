@@ -5,159 +5,235 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>المكتبة الرقمية | الأستاذ أحمد شعبان</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #d4af37;
-            --gold: #d4af37;
+            --gold-gradient: linear-gradient(45deg, #d4af37, #f2d472);
             --card-bg: #1a1a1a;
+            --bg-dark: #0a0a0a;
         }
+
         body {
-            background-color: #000;
+            background-color: var(--bg-dark);
             color: #fff;
             font-family: 'Cairo', sans-serif;
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
         }
+
+        /* تحسين الـ Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
         }
+
+        /* المحفظة بشكل عصري */
         .wallet-box {
-            background: rgba(212, 175, 55, 0.1); 
-            border: 1px solid var(--gold);
-            padding: 10px 20px; 
-            border-radius: 15px; 
-            color: var(--gold);
-            font-weight: 900; 
-            display: flex; 
-            align-items: center; 
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(0,0,0,0.5));
+            border: 1px solid var(--primary);
+            padding: 15px 25px;
+            border-radius: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
             justify-content: space-between;
-            margin-bottom: 25px; 
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .admin-zone {
+            background: #161616;
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px dashed var(--primary);
+            display: none;
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border-radius: 12px;
+            border: 1px solid #333;
+            background: #000;
+            color: #fff;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+
+        .btn-post {
+            width: 100%;
+            padding: 15px;
+            background: var(--gold-gradient);
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
             font-size: 1rem;
         }
 
-        .admin-zone { 
-            background: #111; 
-            padding: 20px; 
-            border-radius: 20px; 
-            border: 1px dashed var(--primary); 
-            display: none; 
-            margin-bottom: 30px;
-        }
-        input { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 8px 0; 
-            border-radius: 10px; 
-            border: 1px solid #333; 
-            background: #000; 
-            color: #fff; 
-            box-sizing: border-box; 
-            font-family: 'Cairo';
-        }
-        .btn-post { 
-            width: 100%; 
-            padding: 12px; 
-            background: var(--primary); 
-            border: none; 
-            border-radius: 10px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            margin-top: 10px;
-        }
-
-        /* تعديل كلاس الكارت لضمان الظهور */
+        /* كروت المذكرات */
         .memo-card {
-            background: var(--card-bg); 
-            border: 1px solid rgba(212, 175, 55, 0.1); 
-            padding: 40px 20px;
-            border-radius: 30px; 
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 30px 20px;
+            border-radius: 25px;
             margin-bottom: 20px;
-            display: block !important; /* لضمان عدم الاختفاء */
-        }
-        .memo-title { font-size: 1.8rem; color: var(--primary); font-weight: 900; margin-bottom: 5px; }
-        
-        .action-btn {
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px;
-            background: var(--primary); 
-            color: #000; 
-            text-decoration: none;
-            padding: 15px; 
-            border-radius: 15px; 
-            font-weight: 900; 
             transition: 0.3s;
-            cursor: pointer; 
-            border: none; 
-            width: 100%; 
-            font-family: 'Cairo';
+            position: relative;
+            overflow: hidden;
         }
 
+        .memo-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+        }
+
+        .memo-title { font-size: 1.5rem; color: #fff; font-weight: 700; margin-bottom: 8px; }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: var(--gold-gradient);
+            color: #000;
+            text-decoration: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            transition: 0.3s;
+        }
+
+        .action-btn:active { transform: scale(0.98); }
+
+        /* شاشة العرض وحماية المحتوى */
         .viewer-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.98); z-index: 9999; display: none;
+            background: #000; z-index: 9999; display: none;
             flex-direction: column;
         }
+
         .viewer-header {
-            padding: 15px; display: flex; justify-content: space-between; align-items: center;
-            background: #111; border-bottom: 1px solid var(--gold);
+            padding: 15px 25px; display: flex; justify-content: space-between; align-items: center;
+            background: #111; border-bottom: 1px solid #222;
         }
-        iframe { width: 100%; height: 100%; border: none; }
-        .close-viewer { color: #fff; font-size: 1.5rem; cursor: pointer; }
+
+        .iframe-wrapper {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* الطبقة الواقية */
+        .protection-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* أيقونة البيت المشوشة للسرقة */
+        .anti-steal-home {
+            font-size: 5rem;
+            color: rgba(212, 175, 55, 0.1); /* شفافية عالية جداً لكي لا تزعج القارئ وتمنع السكرين شوت الواضح */
+            pointer-events: all;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+        }
         
-        .del-btn { 
-            color: #ff4d4d; 
-            font-size: 0.8rem; 
-            cursor: pointer; 
-            margin-top: 20px; 
-            display: inline-block; 
-            text-decoration: underline;
+        .anti-steal-home:hover {
+            color: rgba(212, 175, 55, 0.8);
+            transform: scale(1.1);
         }
+
+        iframe { width: 100%; height: 100%; border: none; }
+
+        .close-viewer { 
+            background: #222; width: 40px; height: 40px; 
+            display: flex; align-items: center; justify-content: center; 
+            border-radius: 50%; cursor: pointer; color: #ff4d4d;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .del-btn { color: #ff4d4d; font-size: 0.8rem; cursor: pointer; margin-top: 15px; display: block; text-align: center; opacity: 0.6; }
     </style>
 </head>
-<body>
-
-<div class="container">
+<body oncontextmenu="return false;"> <div class="container">
     <div class="wallet-box">
-        <span id="welcome-msg">تحميل...</span>
+        <span id="welcome-msg"><i class="fas fa-circle-notch fa-spin"></i></span>
         <div>
-            <i class="fas fa-coins"></i>
+            <i class="fas fa-wallet" style="margin-left: 8px;"></i>
             <span id="user-balance">0</span> ج.م
         </div>
     </div>
 
-    <h1 style="color: var(--primary); margin-bottom: 10px;">المكتبة الرقمية ⚜️</h1>
-    <p style="opacity: 0.5; font-size: 0.8rem; margin-bottom: 30px;">تفتح المذكرات مجاناً للمشتركين في أي كورس</p>
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="color: var(--primary); font-size: 2.2rem; margin: 0;">المكتبة الرقمية ⚜️</h1>
+        <p style="opacity: 0.6; font-weight: 300;">جميع مذكرات الأستاذ أحمد شعبان في مكان واحد</p>
+    </div>
 
     <div class="admin-zone" id="admin-zone">
-        <p style="margin-top:0; color: var(--gold); font-weight: bold;">إضافة مذكرة جديدة (لوحة الإدارة)</p>
-        <input type="text" id="inp-title" placeholder="اسم المذكرة">
-        <input type="text" id="inp-url" placeholder="رابط Google Drive">
-        <button class="btn-post" onclick="uploadMemo()">رفع المذكرة للمكتبة</button>
+        <h3 style="margin-top:0; color: var(--primary);"><i class="fas fa-unlock-alt"></i> لوحة الإدارة</h3>
+        <input type="text" id="inp-title" placeholder="اسم المذكرة (مثال: مذكرة الفلسفة - ترم ثان)">
+        <input type="text" id="inp-url" placeholder="رابط Google Drive (Preview/View)">
+        <button class="btn-post" onclick="uploadMemo()">نشر المذكرة الآن</button>
     </div>
 
     <div id="memos-container"></div>
     
-    <p id="empty-msg" style="display:none; text-align: center; opacity: 0.4; margin-top: 50px;">لا توجد مذكرات متاحة حالياً</p>
+    <div id="loader" style="text-align: center; padding: 50px; display: none;">
+        <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i>
+    </div>
+
+    <p id="empty-msg" style="display:none; text-align: center; opacity: 0.4; margin-top: 50px;">
+        <i class="fas fa-book-open fa-3x"></i><br><br>لا توجد مذكرات متاحة حالياً
+    </p>
 </div>
 
 <div class="viewer-overlay" id="viewer-overlay">
     <div class="viewer-header">
-        <span id="viewer-title" style="color: var(--gold); font-weight: bold;">جاري العرض...</span>
-        <i class="fas fa-times close-viewer" onclick="closeViewer()"></i>
+        <div class="close-viewer" onclick="closeViewer()"><i class="fas fa-times"></i></div>
+        <span id="viewer-title" style="color: var(--primary); font-weight: bold;">...</span>
+        <div style="width: 40px;"></div> </div>
+    <div class="iframe-wrapper">
+        <div class="protection-layer">
+            <a href="index.html" class="anti-steal-home" title="العودة للرئيسية">
+                <i class="fas fa-home"></i>
+            </a>
+        </div>
+        <iframe id="pdf-frame" src="" allow="autoplay"></iframe>
     </div>
-    <iframe id="pdf-frame" src=""></iframe>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
 <script>
+    // تهيئة Firebase (تستخدم نفس الإعدادات الخاصة بك)
     const firebaseConfig = {
         apiKey: "AIzaSyBfkxj5I7UOEETOf9GRqGgqEaEoqPtPMek",
         authDomain: "mrahmed-925d8.firebaseapp.com",
@@ -178,14 +254,13 @@
     if (!userPhone) {
         window.location.href = "go.html";
     } else {
-        // 1. مراقبة بيانات المستخدم والاشتراكات
         db.ref('students/' + userPhone).on('value', (snap) => {
             const user = snap.val();
             if (user) {
                 currentBalance = user.balance || 0;
                 isAdmin = user.role === 'admin' || userPhone === "01025768529";
                 
-                document.getElementById('welcome-msg').innerText = "يا أهلاً، " + user.name.split(' ')[0];
+                document.getElementById('welcome-msg').innerHTML = `<i class="fas fa-user-graduate"></i> مرحباً، ${user.name.split(' ')[0]}`;
                 document.getElementById('user-balance').innerText = currentBalance.toLocaleString();
 
                 hasAnyCourse = false;
@@ -205,11 +280,12 @@
         });
     }
 
-    // 2. جلب وعرض المذكرات من Firebase
     function loadLibrary() {
         const container = document.getElementById('memos-container');
+        document.getElementById('loader').style.display = 'block';
         
         db.ref('library').on('value', (snap) => {
+            document.getElementById('loader').style.display = 'none';
             container.innerHTML = '';
             
             if (!snap.exists()) {
@@ -223,57 +299,56 @@
                 const memo = child.val();
                 const memoId = child.key;
                 
-                let actionHtml = '';
+                let actionBtn;
                 if (hasAnyCourse || isAdmin) {
-                    actionHtml = `
+                    actionBtn = `
                         <button class="action-btn" onclick="openViewer('${memo.url}', '${memo.title}')">
-                            <i class="fas fa-eye"></i> عرض المذكرة (مجاناً)
+                            <i class="fas fa-book-reader"></i> قراءة المذكرة الآن
                         </button>`;
                 } else {
-                    actionHtml = `
-                        <button class="action-btn" onclick="buyMemo('${memoId}')">
-                            <i class="fas fa-shopping-cart"></i> شراء المذكرة (50 ج)
+                    actionBtn = `
+                        <button class="action-btn" onclick="buyMemo('${memoId}')" style="background: #fff; color: #000;">
+                            <i class="fas fa-shopping-basket"></i> شراء المذكرة (50 ج.م)
                         </button>`;
                 }
 
                 container.innerHTML += `
-                    <div class="memo-card" style="display: block !important; opacity: 1;">
+                    <div class="memo-card">
                         <div class="memo-title">${memo.title}</div>
-                        <div style="opacity: 0.6; margin-bottom: 20px; font-size: 0.9rem;">نسخة رقمية - الأستاذ أحمد شعبان</div>
-                        ${actionHtml}
-                        ${isAdmin ? `<span class="del-btn" onclick="deleteMemo('${memoId}')">حذف المذكرة نهائياً</span>` : ''}
+                        <div style="opacity: 0.5; margin-bottom: 20px; font-size: 0.85rem;">
+                            <i class="far fa-clock"></i> تم الرفع: ${new Date(memo.createdAt).toLocaleDateString('ar-EG')}
+                        </div>
+                        ${actionBtn}
+                        ${isAdmin ? `<span class="del-btn" onclick="deleteMemo('${memoId}')"><i class="fas fa-trash"></i> حذف نهائي</span>` : ''}
                     </div>
                 `;
             });
         });
     }
 
-    // 3. نظام الشراء المباشر للمذكرة
     function buyMemo(id) {
         if (currentBalance >= 50) {
-            if (confirm("هل تريد خصم 50 جنيهاً من رصيدك لفتح المذكرة؟")) {
+            if (confirm("سيتم خصم 50 جنيهاً لفتح هذه المذكرة بشكل دائم. هل أنت موافق؟")) {
                 db.ref('students/' + userPhone).update({
                     balance: currentBalance - 50,
                     [`courses/memo_${id}`]: true 
-                }).then(() => alert("تم الشراء! يمكنك الآن قراءة المذكرة."));
+                }).then(() => alert("تمت عملية الشراء بنجاح!"));
             }
         } else {
-            alert("رصيدك غير كافٍ. يرجى شحن المحفظة أولاً.");
+            alert("عذراً، رصيدك الحالي لا يكفي (50 ج.م مطلوب).");
         }
     }
 
-    // 4. معالج عرض الروابط
     function openViewer(url, title) {
-        let finalUrl = url;
-        if (finalUrl.includes('drive.google.com')) {
-            let fileId = "";
-            if (finalUrl.includes('/d/')) {
-                fileId = finalUrl.split('/d/')[1].split('/')[0];
-            } else if (finalUrl.includes('id=')) {
-                fileId = finalUrl.split('id=')[1].split('&')[0];
-            }
-            finalUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+        let fileId = "";
+        // استخراج الـ ID بذكاء أكبر
+        if (url.includes('/d/')) {
+            fileId = url.split('/d/')[1].split('/')[0];
+        } else if (url.includes('id=')) {
+            fileId = url.split('id=')[1].split('&')[0];
         }
+
+        const finalUrl = `https://drive.google.com/file/d/${fileId}/preview`;
         
         document.getElementById('viewer-title').innerText = title;
         document.getElementById('pdf-frame').src = finalUrl;
@@ -287,7 +362,6 @@
         document.body.style.overflow = 'auto';
     }
 
-    // 5. وظائف التحكم (للأدمن فقط)
     function uploadMemo() {
         const t = document.getElementById('inp-title').value;
         const u = document.getElementById('inp-url').value;
@@ -297,7 +371,7 @@
                 url: u,
                 createdAt: new Date().toISOString()
             }).then(() => {
-                alert("تم الإضافة بنجاح!");
+                alert("تمت الإضافة للمكتبة!");
                 document.getElementById('inp-title').value = '';
                 document.getElementById('inp-url').value = '';
             });
@@ -305,10 +379,19 @@
     }
 
     function deleteMemo(id) {
-        if (confirm("هل أنت متأكد من الحذف؟")) {
+        if (confirm("حذف المذكرة سيمنع الطلاب من الوصول إليها. استمرار؟")) {
             db.ref('library/' + id).remove();
         }
     }
+
+    // حماية إضافية من اختصارات الكيبورد (Ctrl+S, Ctrl+P)
+    window.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p' || e.key === 'u')) {
+            e.preventDefault();
+            return false;
+        }
+    });
 </script>
+
 </body>
 </html>
