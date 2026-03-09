@@ -3,54 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الأستاذ أحمد شعبان</title>
+    <title>مكتبة الأستاذ أحمد شعبان | المذكرات الرقمية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #d4af37; --bg: #0a0a0a; --card-bg: rgba(255, 255, 255, 0.05); }
+        :root { --primary: #d4af37; --bg: #050505; --card-bg: rgba(255, 255, 255, 0.03); --gold: #d4af37; }
         body { background: var(--bg); color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 500px; margin: 40px auto; text-align: center; }
         
-        /* واجهة رصيد المحفظة */
-        .wallet-bar {
-            background: #151515; padding: 12px 20px; border-radius: 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 25px; border: 1px solid #222;
+        /* شريط المحفظة بنفس ستايل المنصة */
+        .wallet-box {
+            background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold);
+            padding: 10px 20px; border-radius: 15px; color: var(--gold);
+            font-weight: 900; display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 25px; font-size: 1rem;
         }
-        .wallet-amount { color: var(--primary); font-weight: bold; font-size: 1.1rem; }
 
-        /* لوحة التحكم للأدمن */
         .admin-zone { 
-            background: #151515; padding: 20px; border-radius: 20px; 
+            background: #111; padding: 20px; border-radius: 20px; 
             border: 1px dashed var(--primary); display: none; margin-bottom: 30px;
         }
         input { 
             width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; 
             border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box;
-            font-family: 'Cairo';
         }
         .btn-post { 
             width: 100%; padding: 12px; background: var(--primary); border: none; 
             border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px;
-            transition: 0.3s;
         }
-        .btn-post:hover { opacity: 0.8; }
 
-        /* كارت عرض المذكرة */
         .memo-card {
-            background: var(--card-bg); border: 1px solid #222; padding: 40px 20px;
+            background: var(--card-bg); border: 1px solid rgba(212, 175, 55, 0.1); padding: 40px 20px;
             border-radius: 30px; display: none; position: relative;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .memo-title { font-size: 1.6rem; color: var(--primary); font-weight: 900; margin-bottom: 5px; }
-        .memo-subtitle { opacity: 0.6; font-size: 0.8rem; margin-bottom: 25px; }
+        .memo-title { font-size: 1.8rem; color: var(--primary); font-weight: 900; margin-bottom: 5px; }
         
-        .display-btn {
+        .download-btn {
             display: flex; align-items: center; justify-content: center; gap: 10px;
             background: var(--primary); color: #000; text-decoration: none;
             padding: 15px; border-radius: 15px; font-weight: 900; transition: 0.3s;
         }
-        .display-btn:hover { transform: scale(1.03); }
         
         .del-btn { color: #ff4d4d; font-size: 0.8rem; cursor: pointer; margin-top: 20px; display: inline-block; }
     </style>
@@ -58,30 +51,33 @@
 <body>
 
 <div class="container">
-    <div class="wallet-bar">
-        <span><i class="fas fa-wallet" style="margin-left: 8px;"></i>رصيد محفظتك:</span>
-        <span class="wallet-amount" id="wallet-balance">0 جنيه</span>
+    <div class="wallet-box">
+        <span id="welcome-msg">تحميل...</span>
+        <div>
+            <i class="fas fa-coins"></i>
+            <span id="user-balance">0</span> ج.م
+        </div>
     </div>
 
-    <h1 style="color: var(--primary); margin-bottom: 30px;">المكتبة الرقمية</h1>
+    <h1 style="color: var(--primary); margin-bottom: 30px;">المكتبة الرقمية ⚜️</h1>
 
     <div class="admin-zone" id="admin-zone">
-        <p style="margin-top:0; color: var(--primary);">إدارة المذكرات</p>
-        <input type="text" id="inp-title" placeholder="عنوان المذكرة (مثال: فلسفة 1ث)">
-        <input type="text" id="inp-url" placeholder="رابط Google Drive">
-        <button class="btn-post" onclick="saveMemo()">تحديث المذكرة الآن</button>
+        <p style="margin-top:0;">إضافة مذكرة (Google Drive)</p>
+        <input type="text" id="inp-title" placeholder="عنوان المذكرة">
+        <input type="text" id="inp-url" placeholder="رابط الملف">
+        <button class="btn-post" onclick="saveMemo()">تحديث المكتبة الآن</button>
     </div>
 
     <div id="memo-box">
         <div class="memo-card" id="memo-card">
             <div class="memo-title" id="title-text"></div>
-            <div class="memo-subtitle">الأستاذ أحمد شعبان - فلسفة ومنطق</div>
-            <a href="#" id="file-link" class="display-btn" target="_blank">
-                <i class="fas fa-eye"></i> عرض المذكرة (Preview)
+            <div style="opacity: 0.6; margin-bottom: 25px;">نسخة PDF أصلية - الأستاذ أحمد شعبان</div>
+            <a href="#" id="file-link" class="download-btn" target="_blank">
+                <i class="fas fa-eye"></i> عرض المذكرة الآن
             </a>
             <span class="del-btn" id="del-btn" onclick="deleteMemo()" style="display:none;">حذف المذكرة</span>
         </div>
-        <p id="empty-msg" style="opacity: 0.4;">جاري البحث عن مذكرات...</p>
+        <p id="empty-msg" style="opacity: 0.4;">لا توجد مذكرات متاحة حالياً</p>
     </div>
 </div>
 
@@ -101,27 +97,29 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // جلب البيانات من LocalStorage كما في المنصة
     const userPhone = localStorage.getItem('userLoggedIn');
+    const userName = localStorage.getItem('userName');
 
-    // 1. جلب الرصيد من حقل balance في الفيربيز
-    if (userPhone) {
-        // الربط المباشر مع المسار الموضح في الصورة
-        db.ref(userPhone).on('value', (snapshot) => {
+    if (!userPhone) {
+        window.location.href = "go.html"; // التوجيه لصفحة الدخول إذا لم يسجل
+    } else {
+        // الربط مع مسار الطلاب الصحيح 'students/'
+        db.ref('students/' + userPhone).on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                // استخدام اسم الحقل 'balance' كما ظهر في الصورة
-                const currentBalance = data.balance || 0;
-                document.getElementById('wallet-balance').innerText = currentBalance + " جنيه";
+                // تحديث الاسم والرصيد
+                document.getElementById('welcome-msg').innerText = "يا أهلاً، " + data.name.split(' ')[0];
+                document.getElementById('user-balance').innerText = (data.balance || 0).toLocaleString();
 
-                // التأكد من صلاحية الأدمن
-                if (userPhone === "01025768529") {
+                // التحقق من صلاحية الأدمن
+                if (data.role === "admin" || userPhone === "01025768529") {
                     document.getElementById('admin-zone').style.display = 'block';
                 }
             }
         });
     }
 
-    // 2. إدارة المذكرات
     function saveMemo() {
         const t = document.getElementById('inp-title').value;
         const u = document.getElementById('inp-url').value;
@@ -136,12 +134,9 @@
 
     db.ref('activeMemo').on('value', (s) => {
         const d = s.val();
-        const card = document.getElementById('memo-card');
-        const msg = document.getElementById('empty-msg');
-        
         if(d && d.title) {
-            msg.style.display = 'none';
-            card.style.display = 'block';
+            document.getElementById('empty-msg').style.display = 'none';
+            document.getElementById('memo-card').style.display = 'block';
             document.getElementById('title-text').innerText = d.title;
 
             let finalUrl = d.url;
@@ -151,11 +146,11 @@
             }
             document.getElementById('file-link').href = finalUrl;
             
-            if(userPhone === "01025768529") document.getElementById('del-btn').style.display = 'inline-block';
+            // إظهار زر الحذف للأدمن فقط
+            if (userPhone === "01025768529") document.getElementById('del-btn').style.display = 'inline-block';
         } else {
-            card.style.display = 'none';
-            msg.innerText = "لا توجد مذكرات متاحة حالياً";
-            msg.style.display = 'block';
+            document.getElementById('memo-card').style.display = 'none';
+            document.getElementById('empty-msg').style.display = 'block';
         }
     });
 
