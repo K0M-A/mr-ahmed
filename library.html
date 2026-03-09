@@ -11,7 +11,14 @@
         body { background: var(--bg); color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 500px; margin: 40px auto; text-align: center; }
         
-        /* لوحة التحكم للأدمن */
+        /* واجهة رصيد المحفظة */
+        .wallet-bar {
+            background: #151515; padding: 10px 20px; border-radius: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; border: 1px solid #222;
+        }
+        .wallet-amount { color: var(--primary); font-weight: bold; }
+
         .admin-zone { 
             background: #151515; padding: 20px; border-radius: 20px; 
             border: 1px dashed var(--primary); display: none; margin-bottom: 30px;
@@ -25,7 +32,6 @@
             border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px;
         }
 
-        /* كارت عرض المذكرة */
         .memo-card {
             background: var(--card-bg); border: 1px solid #222; padding: 40px 20px;
             border-radius: 30px; display: none; position: relative;
@@ -47,12 +53,17 @@
 <body>
 
 <div class="container">
+    <div class="wallet-bar">
+        <span><i class="fas fa-wallet" style="margin-left: 8px;"></i>محفظتك:</span>
+        <span class="wallet-amount" id="wallet-balance">جاري التحميل...</span>
+    </div>
+
     <h1 style="color: var(--primary); margin-bottom: 30px;">المكتبة الرقمية</h1>
 
     <div class="admin-zone" id="admin-zone">
-        <p style="margin-top:0;">إضافة مذكرة (رابط Google Drive)</p>
+        <p style="margin-top:0;">إضافة مذكرة جديدة</p>
         <input type="text" id="inp-title" placeholder="اسم المذكرة">
-        <input type="text" id="inp-url" placeholder="ضع رابط الملف هنا">
+        <input type="text" id="inp-url" placeholder="رابط الملف (Drive)">
         <button class="btn-post" onclick="saveMemo()">تحديث المكتبة فوراً</button>
     </div>
 
@@ -85,61 +96,71 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // 1. جلب رقم المستخدم من الـ Storage
     const userPhone = localStorage.getItem('userLoggedIn');
-    
-    // إظهار لوحة التحكم للأدمن فقط
-    if(userPhone === "01025768529") {
-        document.getElementById('admin-zone').style.display = 'block';
+
+    if (!userPhone) {
+        alert("يرجى تسجيل الدخول أولاً");
+        window.location.href = "login.html"; // افترضت أن صفحة الدخول اسمها كذا
     }
 
+    // 2. التحقق من الرقم والرصيد في Firebase
+    db.ref('users/' + userPhone).on('value', (snapshot) => {
+        const userData = snapshot.val();
+        if (userData) {
+            // تحديث الرصيد في الواجهة
+            const balance = userData.wallet || 0;
+            document.getElementById('wallet-balance').innerText = balance + " جنيه";
+
+            // إظهار لوحة الأدمن إذا كان الرقم هو رقمك
+            if (userPhone === "01025768529") {
+                document.getElementById('admin-zone').style.display = 'block';
+            }
+        } else {
+            document.getElementById('wallet-balance').innerText = "غير معروف";
+        }
+    });
+
+    // 3. حفظ المذكرة (للأدمن فقط)
     function saveMemo() {
         const t = document.getElementById('inp-title').value;
         const u = document.getElementById('inp-url').value;
         if(t && u) {
             db.ref('activeMemo').set({ title: t, url: u }).then(() => {
-                alert("تم التحديث!");
-                location.reload();
+                alert("تم تحديث المكتبة!");
+                document.getElementById('inp-title').value = "";
+                document.getElementById('inp-url').value = "";
             });
         }
     }
 
+    // 4. جلب وعرض المذكرة النشطة
     db.ref('activeMemo').on('value', (s) => {
         const d = s.val();
-        if(d) {
-            document.getElementById('empty-msg').style.display = 'none';
-            document.getElementById('memo-card').style.display = 'block';
+        const card = document.getElementById('memo-card');
+        const msg = document.getElementById('empty-msg');
+        
+        if(d && d.title) {
+            msg.style.display = 'none';
+            card.style.display = 'block';
             document.getElementById('title-text').innerText = d.title;
-            
-            // معالجة الرابط ليفتح بصيغة المعاينة بدلاً من التحميل
+
             let finalUrl = d.url;
             if (finalUrl.includes('drive.google.com')) {
-                let fileId = "";
-                if (finalUrl.includes('/d/')) {
-                    fileId = finalUrl.split('/d/')[1].split('/')[0];
-                } else if (finalUrl.includes('id=')) {
-                    fileId = finalUrl.split('id=')[1].split('&')[0];
-                }
-                
-                if (fileId) {
-                    finalUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-                }
+                let fileId = (finalUrl.includes('/d/')) ? finalUrl.split('/d/')[1].split('/')[0] : finalUrl.split('id=')[1].split('&')[0];
+                finalUrl = `https://drive.google.com/file/d/${fileId}/preview`;
             }
-            
             document.getElementById('file-link').href = finalUrl;
             
-            if(userPhone === "01025768529") {
-                document.getElementById('del-btn').style.display = 'inline-block';
-            }
+            if(userPhone === "01025768529") document.getElementById('del-btn').style.display = 'inline-block';
         } else {
-            document.getElementById('memo-card').style.display = 'none';
-            document.getElementById('empty-msg').style.display = 'block';
+            card.style.display = 'none';
+            msg.style.display = 'block';
         }
     });
 
     function deleteMemo() {
-        if(confirm("هل أنت متأكد من حذف المذكرة؟")) {
-            db.ref('activeMemo').remove();
-        }
+        if(confirm("حذف المذكرة؟")) db.ref('activeMemo').remove();
     }
 </script>
 </body>
