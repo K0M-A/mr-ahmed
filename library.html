@@ -18,214 +18,140 @@
             background-color: var(--bg-dark);
             color: #fff;
             font-family: 'Cairo', sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
+            margin: 0; padding: 0; overflow-x: hidden;
         }
 
-        /* تحسين الـ Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #111; }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* المحفظة بشكل عصري */
+        /* المحفظة */
         .wallet-box {
             background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(0,0,0,0.5));
             border: 1px solid var(--primary);
-            padding: 15px 25px;
-            border-radius: 20px;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            padding: 15px 25px; border-radius: 20px; color: var(--primary);
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
+        /* لوحة الإدارة */
         .admin-zone {
-            background: #161616;
-            padding: 25px;
-            border-radius: 20px;
-            border: 1px dashed var(--primary);
-            display: none;
-            margin-bottom: 30px;
-            animation: fadeIn 0.5s ease;
+            background: #161616; padding: 25px; border-radius: 20px;
+            border: 1px dashed var(--primary); display: none; margin-bottom: 30px;
         }
 
-        input {
-            width: 100%;
-            padding: 14px;
-            margin: 10px 0;
-            border-radius: 12px;
-            border: 1px solid #333;
-            background: #000;
-            color: #fff;
-            box-sizing: border-box;
-            transition: 0.3s;
+        input, textarea {
+            width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px;
+            border: 1px solid #333; background: #000; color: #fff; font-family: 'Cairo';
         }
-
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
 
         .btn-post {
-            width: 100%;
-            padding: 15px;
-            background: var(--gold-gradient);
-            border: none;
-            border-radius: 12px;
-            font-weight: bold;
-            color: #000;
-            cursor: pointer;
-            font-size: 1rem;
+            width: 100%; padding: 15px; background: var(--gold-gradient);
+            border: none; border-radius: 12px; font-weight: bold; cursor: pointer;
         }
 
         /* كروت المذكرات */
         .memo-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 30px 20px;
-            border-radius: 25px;
-            margin-bottom: 20px;
-            transition: 0.3s;
-            position: relative;
-            overflow: hidden;
+            background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05);
+            padding: 25px; border-radius: 25px; margin-bottom: 20px; transition: 0.3s;
         }
-
-        .memo-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-        }
-
-        .memo-title { font-size: 1.5rem; color: #fff; font-weight: 700; margin-bottom: 8px; }
+        .memo-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .memo-title { font-size: 1.4rem; color: var(--primary); font-weight: 700; margin-bottom: 5px; }
+        .memo-desc { opacity: 0.7; font-size: 0.9rem; margin-bottom: 15px; line-height: 1.6; }
 
         .action-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            background: var(--gold-gradient);
-            color: #000;
-            text-decoration: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-weight: 800;
-            cursor: pointer;
-            border: none;
-            width: 100%;
-            transition: 0.3s;
+            background: var(--gold-gradient); color: #000; padding: 12px;
+            border-radius: 10px; font-weight: 800; border: none; width: 100%; cursor: pointer;
         }
 
-        .action-btn:active { transform: scale(0.98); }
+        .admin-controls { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
+        .edit-btn { color: #4dabff; cursor: pointer; font-size: 0.85rem; }
+        .del-btn { color: #ff4d4d; cursor: pointer; font-size: 0.85rem; }
 
-        /* شاشة العرض وحماية المحتوى */
+        /* شاشة العرض */
         .viewer-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 9999; display: none;
-            flex-direction: column;
+            background: #000; z-index: 9999; display: none; flex-direction: column;
         }
-
         .viewer-header {
-            padding: 15px 25px; display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;
             background: #111; border-bottom: 1px solid #222;
         }
 
-        .iframe-wrapper {
-            position: relative;
-            flex-grow: 1;
-            width: 100%;
-            height: 100%;
+        .iframe-container {
+            position: relative; flex-grow: 1; overflow: hidden;
+            display: flex; justify-content: center;
         }
 
-        /* الطبقة الواقية */
+        /* حماية المذكرة */
         .protection-layer {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 10;
-            background: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 5; background: transparent;
         }
-
-        /* أيقونة البيت المشوشة للسرقة */
         .anti-steal-home {
-            font-size: 5rem;
-            color: rgba(212, 175, 55, 0.1); /* شفافية عالية جداً لكي لا تزعج القارئ وتمنع السكرين شوت الواضح */
-            pointer-events: all;
-            cursor: pointer;
-            transition: 0.3s;
-            text-decoration: none;
-        }
-        
-        .anti-steal-home:hover {
-            color: rgba(212, 175, 55, 0.8);
-            transform: scale(1.1);
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 6rem; color: rgba(212, 175, 55, 0.07); cursor: pointer; z-index: 6;
         }
 
-        iframe { width: 100%; height: 100%; border: none; }
-
-        .close-viewer { 
-            background: #222; width: 40px; height: 40px; 
-            display: flex; align-items: center; justify-content: center; 
-            border-radius: 50%; cursor: pointer; color: #ff4d4d;
+        /* أدوات التحكم العائمة */
+        .floating-tools {
+            position: fixed; bottom: 30px; left: 20px; display: flex;
+            flex-direction: column; gap: 15px; z-index: 10000;
+        }
+        .tool-btn {
+            width: 50px; height: 50px; background: rgba(212, 175, 55, 0.9);
+            color: #000; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: none;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #pdf-frame { width: 100%; height: 100%; border: none; transition: transform 0.2s ease; transform-origin: top center; }
 
-        .del-btn { color: #ff4d4d; font-size: 0.8rem; cursor: pointer; margin-top: 15px; display: block; text-align: center; opacity: 0.6; }
+        .close-v { background: #222; color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     </style>
 </head>
-<body oncontextmenu="return false;"> <div class="container">
+<body oncontextmenu="return false;">
+
+<div class="container">
     <div class="wallet-box">
-        <span id="welcome-msg"><i class="fas fa-circle-notch fa-spin"></i></span>
-        <div>
-            <i class="fas fa-wallet" style="margin-left: 8px;"></i>
-            <span id="user-balance">0</span> ج.م
-        </div>
+        <span id="welcome-msg"><i class="fas fa-spinner fa-spin"></i></span>
+        <div><i class="fas fa-wallet"></i> <span id="user-balance">0</span> ج.م</div>
     </div>
 
-    <div style="text-align: center; margin-bottom: 40px;">
-        <h1 style="color: var(--primary); font-size: 2.2rem; margin: 0;">المكتبة الرقمية ⚜️</h1>
-        <p style="opacity: 0.6; font-weight: 300;">جميع مذكرات الأستاذ أحمد شعبان في مكان واحد</p>
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: var(--primary); margin: 0;">المكتبة الرقمية ⚜️</h1>
+        <p style="opacity: 0.6;">مذكرات الصف الأول الثانوي - أ/ أحمد شعبان</p>
     </div>
 
     <div class="admin-zone" id="admin-zone">
-        <h3 style="margin-top:0; color: var(--primary);"><i class="fas fa-unlock-alt"></i> لوحة الإدارة</h3>
-        <input type="text" id="inp-title" placeholder="اسم المذكرة (مثال: مذكرة الفلسفة - ترم ثان)">
-        <input type="text" id="inp-url" placeholder="رابط Google Drive (Preview/View)">
-        <button class="btn-post" onclick="uploadMemo()">نشر المذكرة الآن</button>
+        <h3 id="form-title" style="margin:0; color: var(--primary);">إضافة مذكرة جديدة</h3>
+        <input type="hidden" id="edit-id">
+        <input type="text" id="inp-title" placeholder="عنوان المذكرة">
+        <textarea id="inp-desc" placeholder="وصف قصير للمحتوى..." rows="2"></textarea>
+        <input type="text" id="inp-url" placeholder="رابط Google Drive">
+        <button class="btn-post" id="btn-save" onclick="uploadMemo()">نشر المذكرة</button>
+        <button id="btn-cancel" onclick="resetForm()" style="display:none; background:none; border:none; color: grey; width:100%; margin-top:10px; cursor:pointer;">إلغاء التعديل</button>
     </div>
 
     <div id="memos-container"></div>
-    
-    <div id="loader" style="text-align: center; padding: 50px; display: none;">
-        <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i>
-    </div>
-
-    <p id="empty-msg" style="display:none; text-align: center; opacity: 0.4; margin-top: 50px;">
-        <i class="fas fa-book-open fa-3x"></i><br><br>لا توجد مذكرات متاحة حالياً
-    </p>
 </div>
 
 <div class="viewer-overlay" id="viewer-overlay">
     <div class="viewer-header">
-        <div class="close-viewer" onclick="closeViewer()"><i class="fas fa-times"></i></div>
-        <span id="viewer-title" style="color: var(--primary); font-weight: bold;">...</span>
-        <div style="width: 40px;"></div> </div>
-    <div class="iframe-wrapper">
-        <div class="protection-layer">
-            <a href="index.html" class="anti-steal-home" title="العودة للرئيسية">
-                <i class="fas fa-home"></i>
-            </a>
-        </div>
-        <iframe id="pdf-frame" src="" allow="autoplay"></iframe>
+        <div class="close-v" onclick="closeViewer()"><i class="fas fa-times"></i></div>
+        <span id="viewer-title" style="color: var(--primary); font-size: 0.9rem;">عرض المذكرة</span>
+        <div style="width:35px"></div>
+    </div>
+
+    <div class="iframe-container" id="scroll-area">
+        <div class="protection-layer"></div>
+        <a href="index.html" class="anti-steal-home"><i class="fas fa-home"></i></a>
+        <iframe id="pdf-frame" src=""></iframe>
+    </div>
+
+    <div class="floating-tools">
+        <button class="tool-btn" onclick="zoomPDF(0.1)" title="تكبير"><i class="fas fa-search-plus"></i></button>
+        <button class="tool-btn" onclick="zoomPDF(-0.1)" title="تصغير"><i class="fas fa-search-minus"></i></button>
+        <button class="tool-btn" onclick="scrollPDF(-200)" title="لأعلى"><i class="fas fa-chevron-up"></i></button>
+        <button class="tool-btn" onclick="scrollPDF(200)" title="لأسفل"><i class="fas fa-chevron-down"></i></button>
     </div>
 </div>
 
@@ -233,7 +159,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
 <script>
-    // تهيئة Firebase (تستخدم نفس الإعدادات الخاصة بك)
     const firebaseConfig = {
         apiKey: "AIzaSyBfkxj5I7UOEETOf9GRqGgqEaEoqPtPMek",
         authDomain: "mrahmed-925d8.firebaseapp.com",
@@ -247,151 +172,133 @@
     const db = firebase.database();
 
     const userPhone = localStorage.getItem('userLoggedIn');
-    let currentBalance = 0;
-    let hasAnyCourse = false;
-    let isAdmin = false;
+    let currentBalance = 0, isAdmin = false, currentZoom = 1;
 
-    if (!userPhone) {
-        window.location.href = "go.html";
-    } else {
-        db.ref('students/' + userPhone).on('value', (snap) => {
-            const user = snap.val();
-            if (user) {
-                currentBalance = user.balance || 0;
-                isAdmin = user.role === 'admin' || userPhone === "01025768529";
-                
-                document.getElementById('welcome-msg').innerHTML = `<i class="fas fa-user-graduate"></i> مرحباً، ${user.name.split(' ')[0]}`;
-                document.getElementById('user-balance').innerText = currentBalance.toLocaleString();
+    if (!userPhone) { window.location.href = "go.html"; }
 
-                hasAnyCourse = false;
-                if (user.courses) {
-                    Object.values(user.courses).forEach(status => {
-                        if (status === true) hasAnyCourse = true;
-                    });
-                }
+    // مراقبة بيانات المستخدم
+    db.ref('students/' + userPhone).on('value', (snap) => {
+        const user = snap.val();
+        if (user) {
+            currentBalance = user.balance || 0;
+            isAdmin = user.role === 'admin' || userPhone === "01025768529";
+            document.getElementById('welcome-msg').innerText = "يا أهلاً، " + user.name.split(' ')[0];
+            document.getElementById('user-balance').innerText = currentBalance.toLocaleString();
+            if (isAdmin) document.getElementById('admin-zone').style.display = 'block';
+            loadLibrary(user.courses || {});
+        }
+    });
 
-                if (isAdmin) {
-                    document.getElementById('admin-zone').style.display = 'block';
-                    hasAnyCourse = true; 
-                }
-                
-                loadLibrary();
-            }
-        });
-    }
-
-    function loadLibrary() {
+    function loadLibrary(userCourses) {
         const container = document.getElementById('memos-container');
-        document.getElementById('loader').style.display = 'block';
-        
         db.ref('library').on('value', (snap) => {
-            document.getElementById('loader').style.display = 'none';
             container.innerHTML = '';
-            
-            if (!snap.exists()) {
-                document.getElementById('empty-msg').style.display = 'block';
-                return;
-            }
-            
-            document.getElementById('empty-msg').style.display = 'none';
-
             snap.forEach((child) => {
                 const memo = child.val();
-                const memoId = child.key;
-                
-                let actionBtn;
-                if (hasAnyCourse || isAdmin) {
-                    actionBtn = `
-                        <button class="action-btn" onclick="openViewer('${memo.url}', '${memo.title}')">
-                            <i class="fas fa-book-reader"></i> قراءة المذكرة الآن
-                        </button>`;
-                } else {
-                    actionBtn = `
-                        <button class="action-btn" onclick="buyMemo('${memoId}')" style="background: #fff; color: #000;">
-                            <i class="fas fa-shopping-basket"></i> شراء المذكرة (50 ج.م)
-                        </button>`;
-                }
+                const id = child.key;
+                const isOwned = userCourses[`memo_${id}`] === true || isAdmin;
 
                 container.innerHTML += `
                     <div class="memo-card">
                         <div class="memo-title">${memo.title}</div>
-                        <div style="opacity: 0.5; margin-bottom: 20px; font-size: 0.85rem;">
-                            <i class="far fa-clock"></i> تم الرفع: ${new Date(memo.createdAt).toLocaleDateString('ar-EG')}
-                        </div>
-                        ${actionBtn}
-                        ${isAdmin ? `<span class="del-btn" onclick="deleteMemo('${memoId}')"><i class="fas fa-trash"></i> حذف نهائي</span>` : ''}
+                        <div class="memo-desc">${memo.desc || 'لا يوجد وصف متاح لهذه المذكرة.'}</div>
+                        <button class="action-btn" onclick="${isOwned ? `openViewer('${memo.url}', '${memo.title}')` : `buyMemo('${id}')`}">
+                            ${isOwned ? '<i class="fas fa-eye"></i> فتح المذكرة' : '<i class="fas fa-shopping-cart"></i> شراء (50 ج.م)'}
+                        </button>
+                        ${isAdmin ? `
+                            <div class="admin-controls">
+                                <span class="edit-btn" onclick="editMemo('${id}', '${memo.title}', '${memo.desc}', '${memo.url}')"><i class="fas fa-edit"></i> تعديل</span>
+                                <span class="del-btn" onclick="deleteMemo('${id}')"><i class="fas fa-trash"></i> حذف</span>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             });
         });
     }
 
-    function buyMemo(id) {
-        if (currentBalance >= 50) {
-            if (confirm("سيتم خصم 50 جنيهاً لفتح هذه المذكرة بشكل دائم. هل أنت موافق؟")) {
-                db.ref('students/' + userPhone).update({
-                    balance: currentBalance - 50,
-                    [`courses/memo_${id}`]: true 
-                }).then(() => alert("تمت عملية الشراء بنجاح!"));
-            }
-        } else {
-            alert("عذراً، رصيدك الحالي لا يكفي (50 ج.م مطلوب).");
-        }
-    }
-
+    // وظائف العرض والتحكم
     function openViewer(url, title) {
-        let fileId = "";
-        // استخراج الـ ID بذكاء أكبر
-        if (url.includes('/d/')) {
-            fileId = url.split('/d/')[1].split('/')[0];
-        } else if (url.includes('id=')) {
-            fileId = url.split('id=')[1].split('&')[0];
-        }
-
-        const finalUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-        
+        let fileId = url.includes('/d/') ? url.split('/d/')[1].split('/')[0] : url.split('id=')[1].split('&')[0];
+        document.getElementById('pdf-frame').src = `https://drive.google.com/file/d/${fileId}/preview`;
         document.getElementById('viewer-title').innerText = title;
-        document.getElementById('pdf-frame').src = finalUrl;
         document.getElementById('viewer-overlay').style.display = 'flex';
         document.body.style.overflow = 'hidden';
+        currentZoom = 1;
+        document.getElementById('pdf-frame').style.transform = `scale(${currentZoom})`;
     }
 
     function closeViewer() {
         document.getElementById('viewer-overlay').style.display = 'none';
-        document.getElementById('pdf-frame').src = "";
+        document.getElementById('pdf-frame').src = '';
         document.body.style.overflow = 'auto';
     }
 
+    function scrollPDF(amount) {
+        const container = document.getElementById('scroll-area');
+        container.scrollBy({ top: amount, behavior: 'smooth' });
+    }
+
+    function zoomPDF(change) {
+        currentZoom += change;
+        if (currentZoom < 0.5) currentZoom = 0.5;
+        if (currentZoom > 2) currentZoom = 2;
+        document.getElementById('pdf-frame').style.transform = `scale(${currentZoom})`;
+    }
+
+    // وظائف الإدارة
     function uploadMemo() {
-        const t = document.getElementById('inp-title').value;
-        const u = document.getElementById('inp-url').value;
-        if (t && u) {
-            db.ref('library').push({
-                title: t,
-                url: u,
-                createdAt: new Date().toISOString()
-            }).then(() => {
-                alert("تمت الإضافة للمكتبة!");
-                document.getElementById('inp-title').value = '';
-                document.getElementById('inp-url').value = '';
+        const title = document.getElementById('inp-title').value;
+        const desc = document.getElementById('inp-desc').value;
+        const url = document.getElementById('inp-url').value;
+        const editId = document.getElementById('edit-id').value;
+
+        if (title && url) {
+            const data = { title, desc, url, createdAt: new Date().toISOString() };
+            const ref = editId ? db.ref('library/' + editId) : db.ref('library').push();
+            
+            ref.set(data).then(() => {
+                alert(editId ? "تم التعديل!" : "تم النشر!");
+                resetForm();
             });
         }
     }
 
-    function deleteMemo(id) {
-        if (confirm("حذف المذكرة سيمنع الطلاب من الوصول إليها. استمرار؟")) {
-            db.ref('library/' + id).remove();
-        }
+    function editMemo(id, title, desc, url) {
+        document.getElementById('edit-id').value = id;
+        document.getElementById('inp-title').value = title;
+        document.getElementById('inp-desc').value = desc === 'undefined' ? '' : desc;
+        document.getElementById('inp-url').value = url;
+        document.getElementById('form-title').innerText = "تعديل المذكرة";
+        document.getElementById('btn-save').innerText = "حفظ التعديلات";
+        document.getElementById('btn-cancel').style.display = "block";
+        window.scrollTo(0, 0);
     }
 
-    // حماية إضافية من اختصارات الكيبورد (Ctrl+S, Ctrl+P)
-    window.addEventListener('keydown', function(e) {
-        if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p' || e.key === 'u')) {
-            e.preventDefault();
-            return false;
-        }
-    });
-</script>
+    function resetForm() {
+        document.getElementById('edit-id').value = '';
+        document.getElementById('inp-title').value = '';
+        document.getElementById('inp-desc').value = '';
+        document.getElementById('inp-url').value = '';
+        document.getElementById('form-title').innerText = "إضافة مذكرة جديدة";
+        document.getElementById('btn-save').innerText = "نشر المذكرة الآن";
+        document.getElementById('btn-cancel').style.display = "none";
+    }
 
+    function deleteMemo(id) {
+        if (confirm("حذف نهائي؟")) db.ref('library/' + id).remove();
+    }
+
+    function buyMemo(id) {
+        if (currentBalance >= 50) {
+            if (confirm("خصم 50 جنيهاً لفتح المذكرة؟")) {
+                db.ref('students/' + userPhone).update({
+                    balance: currentBalance - 50,
+                    [`courses/memo_${id}`]: true 
+                });
+            }
+        } else { alert("الرصيد غير كافٍ!"); }
+    }
+</script>
 </body>
 </html>
