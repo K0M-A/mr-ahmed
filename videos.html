@@ -18,7 +18,7 @@
             position: absolute; z-index: 100; pointer-events: none;
             color: rgba(255, 255, 255, 0.2); font-size: 14px; font-weight: 700;
             white-space: nowrap; text-shadow: 1px 1px 2px #000; transition: all 1.5s ease-in-out;
-            top: 0; left: 0; /* لضمان الحساب الصحيح داخل الحاوية */
+            top: 0; left: 0;
         }
 
         #custom-player-container {
@@ -37,12 +37,15 @@
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
 
-        /* شاشة منع التسجيل */
         #ban-overlay {
             display: none; position: fixed; inset: 0; background: red; z-index: 99999;
             color: white; font-size: 5vw; font-weight: 900; align-items: center; justify-content: center;
             text-align: center; direction: rtl; padding: 20px;
         }
+
+        /* تنسيق شريط الرفع */
+        .progress-container { width: 100%; background: #222; border-radius: 10px; height: 10px; margin-top: 10px; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background: #d4af37; transition: width 0.3s; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col" oncontextmenu="return false;">
@@ -113,7 +116,14 @@
             <select id="l-target" class="w-full bg-black border border-white/10 p-4 rounded-xl mb-3 text-white"></select>
             <input id="l-name" type="text" placeholder="عنوان المحاضرة" class="w-full bg-white/5 p-4 rounded-xl mb-3 outline-none border border-white/10">
             <textarea id="l-desc" placeholder="وصف المحاضرة..." class="w-full bg-white/5 p-4 rounded-xl mb-3 h-24 outline-none border border-white/10"></textarea>
-            <input id="l-url" type="text" placeholder="رابط الفيديو" class="w-full bg-white/5 p-4 rounded-xl mb-3 outline-none border border-white/10">
+            <div class="flex flex-col gap-2 mb-3">
+                <label class="text-xs text-gray-400">اختر فيديو للرفع (اختياري):</label>
+                <input id="l-file" type="file" accept="video/*" class="w-full text-xs text-gray-400 file:bg-blue-600 file:text-white file:border-0 file:p-2 file:rounded-lg">
+                <div id="u-progress-cont" class="progress-container hidden">
+                    <div id="u-progress-bar" class="progress-bar"></div>
+                </div>
+            </div>
+            <input id="l-url" type="text" placeholder="أو ضع رابط الفيديو مباشرة" class="w-full bg-white/5 p-4 rounded-xl mb-3 outline-none border border-white/10">
             <input id="l-quiz" type="text" placeholder="رابط الامتحان (اختياري)" class="w-full bg-white/5 p-4 rounded-xl mb-6 outline-none border border-white/10">
             <button id="lec-save-btn" onclick="saveLecture()" class="w-full bg-blue-600 text-white font-black p-4 rounded-xl text-lg hover:opacity-90 transition">حفظ المحاضرة</button>
             <button onclick="toggleModal('lec-modal')" class="w-full mt-4 text-gray-500">إلغاء</button>
@@ -143,15 +153,16 @@
         let editingLecId = null;
         let currentOpenPkgId = null;
 
-        // --- نظام منع تسجيل الشاشة ---
+        // --- إعدادات كلاودينري ---
+        const CLOUD_NAME = "dv0beclp0"; 
+        const UPLOAD_PRESET = "p_ahmed"; 
+
         function detectRecording() {
-            // كشف تغيير وضوح الصفحة (مثلاً عند فتح برنامج خارجي)
             document.addEventListener("visibilitychange", function() {
                 if (document.hidden && !document.getElementById('player-view').classList.contains('hidden')) {
                     triggerBan();
                 }
             });
-            // كشف الضغط على اختصارات لوحة المفاتيح للتسجيل
             window.addEventListener('keyup', function(e) {
                 if (e.key === 'PrintScreen' || (e.ctrlKey && e.shiftKey && (e.key === 'S' || e.key === 'R'))) {
                     triggerBan();
@@ -161,11 +172,10 @@
         function triggerBan() {
             document.getElementById('ban-overlay').style.display = 'flex';
             document.body.innerHTML = document.getElementById('ban-overlay').outerHTML;
-            localStorage.removeItem('userLoggedIn'); // طرده من الحساب
+            localStorage.removeItem('userLoggedIn');
         }
         detectRecording();
 
-        // Core Real-time Sync
         db.ref('students/' + userPhone).on('value', (snap) => {
             currentUser = snap.val();
             if (!currentUser) { location.href = 'go.html'; return; }
@@ -313,14 +323,10 @@
             const cont = document.getElementById('custom-player-container');
             if(!wm || !cont) return;
             wm.innerText = `${userPhone} - ${currentUser.name}`;
-            
-            // حساب المسافات بدقة لضمان بقاء العلامة داخل الإطار
             const maxW = cont.clientWidth - wm.offsetWidth - 20; 
             const maxH = cont.clientHeight - wm.offsetHeight - 20;
-            
             const x = Math.max(10, Math.random() * maxW);
             const y = Math.max(10, Math.random() * maxH);
-            
             wm.style.transform = `translate(${x}px, ${y}px)`;
         }
 
@@ -368,11 +374,69 @@
             toggleModal('lec-modal');
         }
 
-        function saveLecture() {
+        // --- دالة الرفع المتقدم لـ Cloudinary بالتقسيم ---
+        async function uploadToCloudinary(file) {
+            const progressCont = document.getElementById('u-progress-cont');
+            const progressBar = document.getElementById('u-progress-bar');
+            progressCont.classList.remove('hidden');
+
+            const chunkSize = 10 * 1024 * 1024; // 10 ميجا لكل جزء (يمكن زيادتها)
+            const totalChunks = Math.ceil(file.size / chunkSize);
+            const uniqueId = 'id' + Date.now();
+            let finalUrl = "";
+
+            for (let i = 0; i < totalChunks; i++) {
+                const start = i * chunkSize;
+                const end = Math.min(start + chunkSize, file.size);
+                const chunk = file.slice(start, end);
+
+                const formData = new FormData();
+                formData.append('file', chunk);
+                formData.append('upload_preset', UPLOAD_PRESET);
+                
+                const contentRange = `bytes ${start}-${end - 1}/${file.size}`;
+
+                try {
+                    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`, {
+                        method: "POST",
+                        headers: {
+                            "X-Unique-Upload-Id": uniqueId,
+                            "Content-Range": contentRange
+                        },
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    const percent = Math.round(((i + 1) / totalChunks) * 100);
+                    progressBar.style.width = percent + '%';
+
+                    if (i === totalChunks - 1) finalUrl = data.secure_url;
+                } catch (e) {
+                    console.error("Upload error", e);
+                    showToast("فشل رفع أحد الأجزاء");
+                    return null;
+                }
+            }
+            progressCont.classList.add('hidden');
+            return finalUrl;
+        }
+
+        async function saveLecture() {
             const pkgId = document.getElementById('l-target').value;
             const name = document.getElementById('l-name').value;
-            const url = document.getElementById('l-url').value;
-            if(!name || !url) return showToast("الاسم والرابط مطلوبان");
+            const videoFile = document.getElementById('l-file').files[0];
+            let url = document.getElementById('l-url').value;
+
+            if(!name) return showToast("الاسم مطلوب");
+
+            if (videoFile) {
+                showToast("جاري رفع الفيديو وتقسيمه...");
+                const uploadedUrl = await uploadToCloudinary(videoFile);
+                if (uploadedUrl) url = uploadedUrl;
+                else return; 
+            }
+
+            if(!url) return showToast("الرابط مطلوب");
 
             const data = {
                 name: name,
@@ -443,6 +507,8 @@
             document.getElementById('l-desc').value = '';
             document.getElementById('l-url').value = '';
             document.getElementById('l-quiz').value = '';
+            document.getElementById('l-file').value = '';
+            document.getElementById('u-progress-cont').classList.add('hidden');
             db.ref('packages').once('value', snap => {
                 snap.forEach(p => s.innerHTML += `<option value="${p.key}">${p.val().name}</option>`);
                 toggleModal('lec-modal');
